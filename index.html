@@ -135,7 +135,7 @@
   .race-mini-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   .race-mini{
     border:1px solid var(--line); background:var(--void); padding:7px 8px; cursor:pointer; font-size:12.5px;
-    line-height:1.3; transition: all 0.15s; text-align:left;
+    line-height:1.3; transition: all 0.15s;
   }
   .race-mini:hover{ border-color: var(--iron); }
   .race-mini.selected{ border-color: var(--ember); background: rgba(193,80,46,0.1); }
@@ -229,6 +229,15 @@
   .gm-status.on{ color: var(--sanguine); }
   .gm-status.off{ color: var(--parchment-dim); }
 
+  /* PENDING */
+  .pending-box{
+    margin-top:14px; border:1px dashed var(--astral); background: rgba(184,154,79,0.07); padding:12px 14px; font-size:14px;
+  }
+  .pending-box .tag{ font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--astral); display:block; margin-bottom:8px; }
+  .pending-box .field{ color: var(--parchment-dim); margin-bottom:3px; }
+  .pending-box .field b{ color: var(--parchment); }
+  .pending-actions{ display:flex; gap:8px; margin-top:10px; }
+  .pending-actions button{ flex:1; padding:8px; }
   .badge{
     font-family:'JetBrains Mono',monospace; font-size:10px; background: var(--blood); color: var(--parchment);
     padding:2px 8px; border-radius:10px; margin-left:10px; vertical-align:middle;
@@ -246,6 +255,7 @@
   .combat-log{ margin-top:18px; }
   .combat-log-entry{ border-left:2px solid var(--blood); padding:8px 0 8px 14px; margin-bottom:6px; font-size:15px; color: var(--parchment); }
   .combat-log-entry small{ display:block; font-family:'JetBrains Mono',monospace; font-size:10.5px; color: var(--parchment-dim); margin-top:3px; }
+  .gm-only-note{ color: var(--parchment-dim); font-style:italic; font-size:15px; }
 </style>
 </head>
 <body>
@@ -256,24 +266,24 @@
   <div class="subtitle">Registro viviente de campaña · 4 jugadores</div>
   <div class="status-bar" id="statusBar">
     <span>Tensión global: <b id="tensionVal">4/4</b></span>
-    <span>Capítulo: <b id="chapterVal">0</b></span>
-    <span>Amenaza activa: <b id="threatVal">Asesino desconocido</b></span>
+    <span>Capítulo: <b id="chapterVal">1</b></span>
+    <span>Amenaza activa: <b id="threatVal">El Asesino Desconocido</b></span>
   </div>
 </header>
 
 <section id="compartir">
   <div class="section-title">Compartir por WhatsApp</div>
-  <div class="section-desc">Pega aquí la URL de tu página web (ej: Netlify). Después cualquiera puede compartirla con este botón.</div>
+  <div class="section-desc">Pega aquí el enlace público de tu campaña.</div>
   <div class="share-box">
-    <input type="text" id="shareLinkInput" placeholder="https://tu-sitio.netlify.app">
-    <button type="button" onclick="saveShareLink()">Guardar link</button>
+    <input type="text" id="shareLinkInput" placeholder="https://...">
+    <button onclick="saveShareLink()">Guardar link</button>
     <a href="#" id="waBtn" class="wa-btn disabled" target="_blank">📲 Compartir por WhatsApp</a>
   </div>
 </section>
 
 <section id="modo-gm">
   <div class="section-title">Modo GM</div>
-  <div class="section-desc">Control maestro para herramientas avanzadas y combates.</div>
+  <div class="section-desc">Los cambios de ficha que hagan los jugadores quedan pendientes hasta que el GM los aprueba. Solo quien tenga el PIN puede aprobar o rechazar.</div>
   <div class="gm-box" id="gmBox"></div>
 </section>
 
@@ -329,14 +339,14 @@
   <div class="add-log">
     <input type="text" id="newChapterTitle" placeholder="Título del capítulo (ej: Capítulo 1 — La Puerta Sellada)">
     <textarea id="newChapterText" placeholder="Pega o escribe aquí el texto narrativo de este turno..."></textarea>
-    <button type="button" onclick="addLogEntry()">Guardar capítulo en el registro</button>
+    <button onclick="addLogEntry()">Guardar capítulo en el registro</button>
     <div class="save-indicator" id="logSaveIndicator">Guardado ✓</div>
   </div>
 </section>
 
 <section id="personajes">
-  <div class="section-title">III · Fichas de Personaje</div>
-  <div class="section-desc">Elige raza y reparte 20 puntos de atributo (base 10). Los cambios se guardan directamente.</div>
+  <div class="section-title">III · Fichas de Personaje <span class="badge" id="pendingBadge" style="display:none;"></span></div>
+  <div class="section-desc">Elige raza y reparte 20 puntos de atributo (base 10). El GM debe aprobar los cambios antes de que queden confirmados.</div>
   <div class="char-grid" id="charGrid"></div>
 </section>
 
@@ -359,7 +369,7 @@
 
 <section id="combate">
   <div class="section-title">VI · Cálculo de Combate</div>
-  <div class="section-desc">Elegí el enemigo y el objetivo, tirá el ataque y el sistema calcula el impacto y el daño según las características del enemigo.</div>
+  <div class="section-desc">Elegí el enemigo y el objetivo, tirá el ataque y el sistema calcula el impacto y el daño según las características del enemigo — vos solo aplicás el resultado a la historia.</div>
   <div id="combatPanel" class="combat-panel"></div>
 </section>
 
@@ -384,7 +394,7 @@
 </section>
 
 <footer>
-  Aethelgard persiste entre sesiones · datos guardados localmente · <button type="button" class="ghost" onclick="resetAll()" style="margin-left:8px;">Reiniciar registro</button>
+  Aethelgard persiste entre sesiones · datos guardados localmente · <button class="ghost" onclick="resetAll()" style="margin-left:8px;">Reiniciar registro</button>
 </footer>
 
 <script>
@@ -408,13 +418,14 @@ const dones = [
   ["Metamorfosis Quimérica","Transforma partes del cuerpo en anatomía de bestias mitológicas."],
   ["Sustitución de Materia","Intercambio instantáneo de posición con cualquier objeto inerte similar en tu campo de visión."],
   ["Red Alquímica","Descompone y reordena materia inerte al tocarla: trincheras, jaulas, estructuras colapsadas."],
-  ["Canto de las Quemaduras","Transfiere dolor y heridas físicas al enemigo más cercano con solo rozarlo."]
+  ["Canto de las Quemaduras","Transfiere dolor y heridas físicas al enemigo más cercano con solo rozarlo."],
+  ["Santuario del Umbral Astral","Crea una barrera de geometría estelar que desvía proyectiles e inhíbe la visión sombría del enemigo."]
 ];
 
 const dominios = [
   ["Osario de las Mil Hojas","Espadas flotantes que atacan automáticamente a los objetivos."],
   ["Cámara de la Plaga Negra","Niebla que absorbe salud enemiga y la transfiere al grupo cada turno."],
-  ["Santuario del Espejo Roto","Espejos que duplican y proyectan los ataques del grupo desde ángulos imposibles."],
+  ["Santuario del Espejo Roto","Espejos que duplican y proyectan los ataques del grupo desde ángulos impossibles."],
   ["Horizonte de Tiempo Suspendido","El tiempo se congela para los enemigos durante 1 turno."],
   ["Coliseo del Duelo Sangriento","Anula magia y proyectiles lejanos; solo cuerpo a cuerpo."],
   ["Cúpula de la Agonía Compartida","Une la vitalidad enemiga: el daño a uno se multiplica y reparte entre todos."],
@@ -436,41 +447,44 @@ function showTerritory(key){
   el.classList.add('active');
 }
 
-// ---------- STORAGE COMPATIBLE ----------
-async function safeGet(key){
+/* --- LOCALSTORAGE ENGINE FIX --- */
+function safeGet(key){
   try{
-    const r = localStorage.getItem(key);
-    return r ? JSON.parse(r) : null;
+    const val = localStorage.getItem(key);
+    return val ? JSON.parse(val) : null;
   }catch(e){ return null; }
 }
 
-async function safeSet(key, value){
+function safeSet(key, value){
   try{
     localStorage.setItem(key, JSON.stringify(value));
     return true;
-  }catch(e){
-    return false;
-  }
+  }catch(e){ return false; }
 }
 
 // ---------- CAMPAIGN STATE ----------
-async function loadState(){
-  const s = await safeGet('aethelgard-state');
+function loadState(){
+  const s = safeGet('aethelgard-state');
   if(s){
     document.getElementById('tensionVal').textContent = s.tension || '4/4';
-    document.getElementById('chapterVal').textContent = s.chapter ?? '0';
-    document.getElementById('threatVal').textContent = s.threat || 'Ninguna';
+    document.getElementById('chapterVal').textContent = s.chapter ?? '1';
+    document.getElementById('threatVal').textContent = s.threat || 'El Asesino Desconocido';
   }
 }
 
 // ---------- NARRATIVE LOG ----------
-async function loadLog(){
-  const log = await safeGet('aethelgard-log') || [];
-  const container = document.getElementById('logEntries');
-  if(log.length === 0){
-    container.innerHTML = '<div class="empty-state">Aún no hay capítulos registrados.</div>';
-    return;
+function loadLog(){
+  let log = safeGet('aethelgard-log');
+  if(!log || log.length === 0){
+    log = [{
+      title: "Capítulo 1 — El Umbral del Eclipse",
+      text: "El aire de la Cámara del Equilibrio se congeló al instante. Kaelan, el elfo astral, dio un paso al frente mientras sus runas estelares comenzaban a pulsar con una luz violácea. Tras rastrear la energía del difunto Mediador Aurelio Vance, el grupo fue acorralado por el Asesino Desconocido, cuya silueta parece absorber la luz de las antorchas.\n\nKaelan alzó su báculo, preparando el Santuario del Umbral Astral para proteger las espaldas de sus compañeros mientras evalúa canalizar el Horizonte de Tiempo Suspendido. Los filos del enemigo emiten un chasquido metálico en la oscuridad. El combate es inminente.",
+      date: new Date().toLocaleString('es-ES')
+    }];
+    safeSet('aethelgard-log', log);
   }
+  
+  const container = document.getElementById('logEntries');
   container.innerHTML = log.map(entry => `
     <div class="log-entry">
       <h4>${escapeHtml(entry.title)}</h4>
@@ -480,26 +494,26 @@ async function loadLog(){
   `).reverse().join('');
 }
 
-async function addLogEntry(){
+function addLogEntry(){
   const titleInput = document.getElementById('newChapterTitle');
   const textInput = document.getElementById('newChapterText');
   const title = titleInput.value.trim();
   const text = textInput.value.trim();
   if(!title || !text) return;
 
-  const log = await safeGet('aethelgard-log') || [];
+  const log = safeGet('aethelgard-log') || [];
   log.push({ title, text, date: new Date().toLocaleString('es-ES') });
-  const ok = await safeSet('aethelgard-log', log);
+  const ok = safeSet('aethelgard-log', log);
 
-  const s = await safeGet('aethelgard-state') || { tension:'4/4', chapter:0, threat:'Asesino desconocido' };
+  const s = safeGet('aethelgard-state') || { tension:'4/4', chapter:1, threat:'El Asesino Desconocido' };
   s.chapter = log.length;
-  await safeSet('aethelgard-state', s);
+  safeSet('aethelgard-state', s);
 
   if(ok){
     titleInput.value = '';
     textInput.value = '';
-    await loadLog();
-    await loadState();
+    loadLog();
+    loadState();
     flashSave('logSaveIndicator');
   }
 }
@@ -543,14 +557,21 @@ const ATTRS = [
 const POOL = 20;
 const territoryOptions = ['Bastilla de Hierro','Dominación Astral','Espesura Sangrienta','Grieta de Umbra','Territorio Neutral'];
 
-function defaultCharacter(){
+function defaultCharacter(slotIdx){
+  if(slotIdx === 0){
+    return {
+      realName:'Jugador 1', charName:'Kaelan', appearance:'Elfo Astral de túnicas oscuras bordadas con glifos estelares.', territory:'Dominación Astral',
+      raceId:'elfos', points:{FUE:0,DES:2,CON:0,INT:8,SAB:10,CAR:0},
+      don:'Santuario del Umbral Astral', dominio:'Horizonte de Tiempo Suspendido', dominioUsed:false, hpCurrent:100, notes:'Báculo estelar, fragmento de escarzo puro.'
+    };
+  }
   return {
     realName:'', charName:'', appearance:'', territory:'',
     raceId:null, points:{FUE:0,DES:0,CON:0,INT:0,SAB:0,CAR:0},
     don:'', dominio:'', dominioUsed:false, hpCurrent:100, notes:''
   };
 }
-function cloneChar(c){ return c ? JSON.parse(JSON.stringify(c)) : defaultCharacter(); }
+function cloneChar(c, slotIdx){ return c ? JSON.parse(JSON.stringify(c)) : defaultCharacter(slotIdx); }
 function pointsUsed(c){ return ATTRS.reduce((s,a)=> s + (c.points[a.key]||0), 0); }
 function selectedRace(c){ return RACES.find(r=>r.id===c.raceId) || null; }
 function scoreOf(c,key){ const race = selectedRace(c); return 10 + (c.points[key]||0) + (race && race.bonus[key] ? race.bonus[key] : 0); }
@@ -563,20 +584,19 @@ function computeAttackMod(c){
   return { key:bestKey, mod: mod(bestScore) };
 }
 
-// ---------- CHARACTER CARD RENDERING ----------
-let charactersCache = [null,null,null,null];
-let draftCache = [null,null,null,null];
+let charactersCache = [null,null,null,null];  
+let pendingCache = [null,null,null,null];     
+let draftCache = [null,null,null,null];       
 
-// CORREGIDO: Añadido type="button" a las opciones de raza para no resetear la página
 function raceMiniGrid(idx, draft){
   const regions = [...new Set(RACES.map(r=>r.region))];
   return regions.map(region => `
     <div class="race-region">${region}</div>
     <div class="race-mini-grid">
       ${RACES.filter(r=>r.region===region).map(r => `
-        <button type="button" class="race-mini ${draft.raceId===r.id?'selected':''}" onclick="selectRace(${idx},'${r.id}')">
+        <div class="race-mini ${draft.raceId===r.id?'selected':''}" onclick="selectRace(${idx},'${r.id}')">
           <b>${r.name}</b><span>${r.desc}</span>
-        </button>
+        </div>
       `).join('')}
     </div>
   `).join('');
@@ -602,7 +622,13 @@ function attrMiniRows(idx, draft){
   }).join('');
 }
 
-function charCardTemplate(idx, draft){
+function syncDraft(idx, field, val){
+  if(draftCache[idx]){
+    draftCache[idx][field] = val;
+  }
+}
+
+function charCardTemplate(idx, draft, pending){
   const used = pointsUsed(draft);
   const remaining = POOL - used;
   const remClass = remaining===0 ? 'zero' : (remaining<0 ? 'over' : '');
@@ -611,16 +637,31 @@ function charCardTemplate(idx, draft){
   const atk = computeAttackMod(draft);
   const hpCur = Math.min(draft.hpCurrent==null?maxHP:draft.hpCurrent, maxHP);
 
+  const pendingHtml = pending ? `
+    <div class="pending-box">
+      <span class="tag">⏳ Cambio pendiente de aprobación (enviado ${pending.date})</span>
+      <div class="field"><b>${escapeHtml(pending.charName||'(sin nombre)')}</b> — ${escapeHtml(pending.territory||'—')}</div>
+      <div class="field">Raza: ${escapeHtml((RACES.find(r=>r.id===pending.raceId)||{}).name || '—')}</div>
+      <div class="field">Don: ${escapeHtml(pending.don||'—')} · Dominio: ${escapeHtml(pending.dominio||'—')}</div>
+      ${isGM ? `
+        <div class="pending-actions">
+          <button onclick="approvePending(${idx})">✓ Aprobar</button>
+          <button class="ghost" onclick="rejectPending(${idx})">✕ Rechazar</button>
+        </div>
+      ` : `<div class="field" style="margin-top:6px;">Esperando revisión del GM.</div>`}
+    </div>
+  ` : '';
+
   return `
     <div class="char-card" data-slot="Jugador ${idx+1}">
       <label>Nombre real</label>
-      <input id="c${idx}-real" value="${escapeHtml(draft.realName)}" placeholder="Tu nombre">
+      <input id="c${idx}-real" value="${escapeHtml(draft.realName)}" oninput="syncDraft(${idx},'realName',this.value)" placeholder="Tu nombre">
       <label>Personaje</label>
-      <input id="c${idx}-name" value="${escapeHtml(draft.charName)}" placeholder="Nombre del personaje">
+      <input id="c${idx}-name" value="${escapeHtml(draft.charName)}" oninput="syncDraft(${idx},'charName',this.value)" placeholder="Nombre del personaje">
       <label>Apariencia</label>
-      <textarea id="c${idx}-appearance" placeholder="Descripción breve">${escapeHtml(draft.appearance)}</textarea>
+      <textarea id="c${idx}-appearance" oninput="syncDraft(${idx},'appearance',this.value)" placeholder="Descripción breve">${escapeHtml(draft.appearance)}</textarea>
       <label>Territorio de origen</label>
-      <select id="c${idx}-territory">
+      <select id="c${idx}-territory" onchange="syncDraft(${idx},'territory',this.value)">
         <option value="">-- Selecciona --</option>
         ${territoryOptions.map(t=>`<option value="${t}" ${draft.territory===t?'selected':''}>${t}</option>`).join('')}
       </select>
@@ -638,35 +679,51 @@ function charCardTemplate(idx, draft){
       </div>
 
       <label>Don Singular</label>
-      <input id="c${idx}-don" value="${escapeHtml(draft.don)}" placeholder="Nombre del Don">
+      <input id="c${idx}-don" value="${escapeHtml(draft.don)}" oninput="syncDraft(${idx},'don',this.value)" placeholder="Nombre del Don">
       <label>Dominio Máximo</label>
-      <input id="c${idx}-dominio" value="${escapeHtml(draft.dominio)}" placeholder="Nombre del Dominio">
+      <input id="c${idx}-dominio" value="${escapeHtml(draft.dominio)}" oninput="syncDraft(${idx},'dominio',this.value)" placeholder="Nombre del Dominio">
 
       <label>Salud actual: <span id="c${idx}-hpval">${hpCur}</span>/${maxHP}</label>
       <input type="range" id="c${idx}-hp" min="0" max="${maxHP}" value="${hpCur}" oninput="updateHpCurrent(${idx}, this.value)">
       <div class="hp-bar"><div class="hp-fill" id="c${idx}-hpbar" style="width:${maxHP?Math.round(hpCur/maxHP*100):0}%"></div></div>
 
       <label>Notas / Inventario</label>
-      <textarea id="c${idx}-notes" placeholder="Objetos, estados, heridas...">${escapeHtml(draft.notes)}</textarea>
+      <textarea id="c${idx}-notes" oninput="syncDraft(${idx},'notes',this.value)" placeholder="Objetos, estados, heridas...">${escapeHtml(draft.notes)}</textarea>
 
       <div class="card-actions">
-        <button type="button" onclick="saveCharacter(${idx})">Guardar Ficha</button>
-        <button type="button" class="ghost" onclick="toggleDominio(${idx})">${draft.dominioUsed ? 'Marcar Dominio disponible' : 'Marcar Dominio usado'}</button>
+        <button onclick="saveCharacter(${idx})">${isGM ? 'Guardar (directo, sos GM)' : 'Enviar para aprobación'}</button>
+        <button class="ghost" onclick="toggleDominio(${idx})">${draft.dominioUsed ? 'Marcar Dominio disponible' : 'Marcar Dominio usado'}</button>
       </div>
-      <div class="save-indicator" id="c${idx}-saved">Guardado ✓</div>
+      <div class="save-indicator" id="c${idx}-saved">${isGM ? 'Guardado ✓' : 'Enviado ✓'}</div>
+      ${pendingHtml}
     </div>
   `;
 }
 
 function renderCharGrid(){
   const grid = document.getElementById('charGrid');
-  grid.innerHTML = [0,1,2,3].map(i => charCardTemplate(i, draftCache[i])).join('');
+  grid.innerHTML = [0,1,2,3].map(i => charCardTemplate(i, draftCache[i], pendingCache[i])).join('');
+
+  const pendingCount = pendingCache.filter(Boolean).length;
+  const badge = document.getElementById('pendingBadge');
+  if(pendingCount > 0){
+    badge.style.display = 'inline';
+    badge.textContent = `${pendingCount} pendiente${pendingCount>1?'s':''}`;
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
-async function loadCharacters(){
-  const data = await safeGet('aethelgard-characters') || [null,null,null,null];
+function loadCharacters(){
+  let data = safeGet('aethelgard-characters');
+  if(!data){
+    data = [defaultCharacter(0), null, null, null];
+    safeSet('aethelgard-characters', data);
+  }
+  const pending = safeGet('aethelgard-pending') || [null,null,null,null];
   charactersCache = data;
-  draftCache = [0,1,2,3].map(i => cloneChar(data[i]));
+  pendingCache = pending;
+  draftCache = [0,1,2,3].map(i => cloneChar(pending[i] || data[i], i));
   renderCharGrid();
 }
 
@@ -692,33 +749,58 @@ function updateHpCurrent(idx, val){
 }
 
 function readTextFieldsInto(idx){
-  const get = id => document.getElementById(id).value;
   const draft = draftCache[idx];
-  draft.realName = get(`c${idx}-real`);
-  draft.charName = get(`c${idx}-name`);
-  draft.appearance = get(`c${idx}-appearance`);
-  draft.territory = get(`c${idx}-territory`);
-  draft.don = get(`c${idx}-don`);
-  draft.dominio = get(`c${idx}-dominio`);
-  draft.notes = get(`c${idx}-notes`);
-  draft.hpCurrent = parseInt(get(`c${idx}-hp`));
+  draft.realName = document.getElementById(`c${idx}-real`).value;
+  draft.charName = document.getElementById(`c${idx}-name`).value;
+  draft.appearance = document.getElementById(`c${idx}-appearance`).value;
+  draft.territory = document.getElementById(`c${idx}-territory`).value;
+  draft.don = document.getElementById(`c${idx}-don`).value;
+  draft.dominio = document.getElementById(`c${idx}-dominio`).value;
+  draft.notes = document.getElementById(`c${idx}-notes`).value;
+  draft.hpCurrent = parseInt(document.getElementById(`c${idx}-hp`).value);
   return draft;
 }
 
-// CORREGIDO: Guardado directo sin necesidad de aprobación de GM
-async function saveCharacter(idx){
+function saveCharacter(idx){
   const draft = readTextFieldsInto(idx);
-  charactersCache[idx] = cloneChar(draft);
-  await safeSet('aethelgard-characters', charactersCache);
+
+  if(isGM){
+    charactersCache[idx] = cloneChar(draft, idx);
+    pendingCache[idx] = null;
+    safeSet('aethelgard-characters', charactersCache);
+    safeSet('aethelgard-pending', pendingCache);
+  } else {
+    pendingCache[idx] = { ...cloneChar(draft, idx), date: new Date().toLocaleString('es-ES') };
+    safeSet('aethelgard-pending', pendingCache);
+  }
   flashSave(`c${idx}-saved`);
-  await loadCharacters();
+  loadCharacters();
 }
 
-async function toggleDominio(idx){
+function approvePending(idx){
+  if(!isGM) return;
+  const p = pendingCache[idx];
+  if(!p) return;
+  const { date, ...values } = p;
+  charactersCache[idx] = values;
+  pendingCache[idx] = null;
+  safeSet('aethelgard-characters', charactersCache);
+  safeSet('aethelgard-pending', pendingCache);
+  loadCharacters();
+}
+
+function rejectPending(idx){
+  if(!isGM) return;
+  pendingCache[idx] = null;
+  safeSet('aethelgard-pending', pendingCache);
+  loadCharacters();
+}
+
+function toggleDominio(idx){
   draftCache[idx].dominioUsed = !draftCache[idx].dominioUsed;
-  charactersCache[idx] = charactersCache[idx] || cloneChar(draftCache[idx]);
+  charactersCache[idx] = charactersCache[idx] || cloneChar(draftCache[idx], idx);
   charactersCache[idx].dominioUsed = draftCache[idx].dominioUsed;
-  await safeSet('aethelgard-characters', charactersCache);
+  safeSet('aethelgard-characters', charactersCache);
   renderCharGrid();
 }
 
@@ -795,10 +877,10 @@ function monsterCardTemplate(m){
           <span>${cur}/${m.hp}</span>
         </div>
         <div class="monster-hp-controls">
-          <button type="button" class="ghost" onclick="adjustBestiaryHP('${m.id}',-5)">-5</button>
-          <button type="button" class="ghost" onclick="adjustBestiaryHP('${m.id}',-1)">-1</button>
-          <button type="button" class="ghost" onclick="adjustBestiaryHP('${m.id}',1)">+1</button>
-          <button type="button" class="ghost" onclick="resetBestiaryHP('${m.id}')">Reset</button>
+          <button class="ghost" onclick="adjustBestiaryHP('${m.id}',-5)">-5</button>
+          <button class="ghost" onclick="adjustBestiaryHP('${m.id}',-1)">-1</button>
+          <button class="ghost" onclick="adjustBestiaryHP('${m.id}',1)">+1</button>
+          <button class="ghost" onclick="resetBestiaryHP('${m.id}')">Reset</button>
         </div>
       </div>
     </div>
@@ -809,36 +891,36 @@ function renderBestiary(){
   document.getElementById('bestiaryGrid').innerHTML = BESTIARY.map(monsterCardTemplate).join('');
 }
 
-async function loadBestiary(){
-  bestiaryHpCache = await safeGet('aethelgard-bestiary-hp') || {};
-  bestiaryDominioUsed = await safeGet('aethelgard-bestiary-dominio') || {};
+function loadBestiary(){
+  bestiaryHpCache = safeGet('aethelgard-bestiary-hp') || {};
+  bestiaryDominioUsed = safeGet('aethelgard-bestiary-dominio') || {};
   renderBestiary();
   populateCombatSelects();
 }
 
-async function adjustBestiaryHP(id, delta){
+function adjustBestiaryHP(id, delta){
   const m = BESTIARY.find(x=>x.id===id);
   if(!m) return;
   const cur = bestiaryHpCache[id] ?? m.hp;
   bestiaryHpCache[id] = Math.max(0, Math.min(m.hp, cur + delta));
-  await safeSet('aethelgard-bestiary-hp', bestiaryHpCache);
+  safeSet('aethelgard-bestiary-hp', bestiaryHpCache);
   renderBestiary();
 }
 
-async function resetBestiaryHP(id){
+function resetBestiaryHP(id){
   const m = BESTIARY.find(x=>x.id===id);
   if(!m) return;
   bestiaryHpCache[id] = m.hp;
   bestiaryDominioUsed[id] = false;
-  await safeSet('aethelgard-bestiary-hp', bestiaryHpCache);
-  await safeSet('aethelgard-bestiary-dominio', bestiaryDominioUsed);
+  safeSet('aethelgard-bestiary-hp', bestiaryHpCache);
+  safeSet('aethelgard-bestiary-dominio', bestiaryDominioUsed);
   renderBestiary();
   renderCombatPanel();
 }
 
 // ---------- COMBAT CALCULATOR ----------
 let combatLog = [];
-let selectedEnemyId = BESTIARY[0].id;
+let selectedEnemyId = 'asesino';
 let selectedTargetIdx = 0;
 
 function parseDamage(str){
@@ -876,6 +958,11 @@ function renderCombatPanel(){
   const panel = document.getElementById('combatPanel');
   if(!panel) return;
 
+  if(!isGM){
+    panel.innerHTML = `<div class="gm-only-note">Solo el GM puede resolver combates. Activá el Modo GM arriba para usar esta sección.</div>`;
+    return;
+  }
+
   const enemy = BESTIARY.find(m=>m.id===selectedEnemyId) || BESTIARY[0];
   const dominioAvailable = enemy.dominio && !bestiaryDominioUsed[enemy.id];
 
@@ -900,7 +987,7 @@ function renderCombatPanel(){
         </label>
       </div>
     ` : ''}
-    <button type="button" onclick="rollCombat()">🎲 Tirar ataque</button>
+    <button onclick="rollCombat()">🎲 Tirar ataque</button>
     <div class="combat-log" id="combatLogList"></div>
   `;
   renderCombatLog();
@@ -921,12 +1008,13 @@ function renderCombatLog(){
   `).join('');
 }
 
-async function loadCombatLog(){
-  combatLog = await safeGet('aethelgard-combat-log') || [];
+function loadCombatLog(){
+  combatLog = safeGet('aethelgard-combat-log') || [];
   renderCombatLog();
 }
 
-async function rollCombat(){
+function rollCombat(){
+  if(!isGM) return;
   const enemy = BESTIARY.find(m=>m.id===selectedEnemyId);
   if(!enemy) return;
   const targetIdx = selectedTargetIdx;
@@ -968,88 +1056,89 @@ async function rollCombat(){
       const c = charactersCache[targetIdx];
       const maxHP = computeMaxHP(c);
       c.hpCurrent = Math.max(0, (c.hpCurrent==null?maxHP:c.hpCurrent) - total);
-      await safeSet('aethelgard-characters', charactersCache);
+      safeSet('aethelgard-characters', charactersCache);
       text += ` ${targetLabel(targetIdx)} queda con ${c.hpCurrent}/${maxHP} HP.`;
     } else {
-      text += ` (${targetLabel(targetIdx)} no tiene ficha guardada — aplicá el daño manualmente.)`;
+      text += ` (${targetLabel(targetIdx)} no tiene ficha aprobada — aplicá el daño manualmente.)`;
     }
 
     if(useDominio){
       bestiaryDominioUsed[enemy.id] = true;
-      await safeSet('aethelgard-bestiary-dominio', bestiaryDominioUsed);
+      safeSet('aethelgard-bestiary-dominio', bestiaryDominioUsed);
     }
   }
 
   combatLog.push({ text, date: new Date().toLocaleTimeString('es-ES') });
-  await safeSet('aethelgard-combat-log', combatLog);
+  safeSet('aethelgard-combat-log', combatLog);
 
-  await loadCharacters();
+  loadCharacters();
   renderCombatPanel();
 }
 
 // ---------- RESET ----------
-async function resetAll(){
-  if(!confirm('Esto borrará el log narrativo, las fichas, el HP del bestiario y el estado para TODOS los jugadores. ¿Continuar?')) return;
-  await safeSet('aethelgard-log', []);
-  await safeSet('aethelgard-characters', [null,null,null,null]);
-  await safeSet('aethelgard-bestiary-hp', {});
-  await safeSet('aethelgard-bestiary-dominio', {});
-  await safeSet('aethelgard-combat-log', []);
-  await safeSet('aethelgard-state', { tension:'4/4', chapter:0, threat:'Asesino desconocido' });
-  await loadLog();
-  await loadCharacters();
-  await loadBestiary();
-  await loadCombatLog();
-  await loadState();
+function resetAll(){
+  if(!confirm('Esto borrará el log narrativo, las fichas, pendientes, el HP del bestiario y el estado. ¿Continuar?')) return;
+  safeSet('aethelgard-log', []);
+  safeSet('aethelgard-characters', [defaultCharacter(0), null, null, null]);
+  safeSet('aethelgard-pending', [null,null,null,null]);
+  safeSet('aethelgard-bestiary-hp', {});
+  safeSet('aethelgard-bestiary-dominio', {});
+  safeSet('aethelgard-combat-log', []);
+  safeSet('aethelgard-state', { tension:'4/4', chapter:1, threat:'El Asesino Desconocido' });
+  loadLog();
+  loadCharacters();
+  loadBestiary();
+  loadCombatLog();
+  loadState();
 }
 
 // ---------- GM MODE ----------
-let isGM = false;
+let isGM = true;
 
 function renderGmBox(hasPin){
   const box = document.getElementById('gmBox');
   if(isGM){
     box.innerHTML = `
       <div class="gm-status on">● Modo GM activo en este dispositivo</div>
-      <div style="margin-top:10px;"><button type="button" class="ghost" onclick="lockGM()">Salir del modo GM</button></div>
+      <div style="margin-top:10px;"><button class="ghost" onclick="lockGM()">Salir del modo GM</button></div>
     `;
   } else if(!hasPin){
     box.innerHTML = `
       <div class="gm-status off">○ Todavía no hay PIN de GM configurado</div>
       <div style="margin-top:12px;">
         <input type="text" id="gmPinSetup" placeholder="Elegí un PIN (ej: 4 dígitos)">
-        <button type="button" onclick="setGmPin()">Configurar y activar Modo GM</button>
+        <button onclick="setGmPin()">Configurar y activar Modo GM</button>
       </div>
     `;
   } else {
     box.innerHTML = `
-      <div class="gm-status off">○ Modo libre (herramientas del GM deshabilitadas)</div>
+      <div class="gm-status off">○ Modo jugador (los cambios de ficha requieren aprobación)</div>
       <div style="margin-top:12px;">
         <input type="text" id="gmPinUnlock" placeholder="PIN de GM">
-        <button type="button" onclick="unlockGM()">Entrar como GM</button>
+        <button onclick="unlockGM()">Entrar como GM</button>
       </div>
     `;
   }
 }
 
-async function loadGM(){
-  const gm = await safeGet('aethelgard-gm');
+function loadGM(){
+  const gm = safeGet('aethelgard-gm');
   renderGmBox(!!(gm && gm.pin));
 }
 
-async function setGmPin(){
+function setGmPin(){
   const pin = document.getElementById('gmPinSetup').value.trim();
   if(!pin) return;
-  await safeSet('aethelgard-gm', { pin });
+  safeSet('aethelgard-gm', { pin });
   isGM = true;
   renderGmBox(true);
   renderCharGrid();
   renderCombatPanel();
 }
 
-async function unlockGM(){
+function unlockGM(){
   const attempt = document.getElementById('gmPinUnlock').value.trim();
-  const gm = await safeGet('aethelgard-gm');
+  const gm = safeGet('aethelgard-gm');
   if(gm && gm.pin === attempt){
     isGM = true;
     renderGmBox(true);
@@ -1068,17 +1157,17 @@ function lockGM(){
 }
 
 // ---------- SHARE LINK ----------
-async function loadShareLink(){
-  const s = await safeGet('aethelgard-share-link');
+function loadShareLink(){
+  const s = safeGet('aethelgard-share-link');
   const url = s && s.url ? s.url : '';
   document.getElementById('shareLinkInput').value = url;
   updateWaButton(url);
 }
 
-async function saveShareLink(){
+function saveShareLink(){
   const url = document.getElementById('shareLinkInput').value.trim();
   if(!url) return;
-  await safeSet('aethelgard-share-link', { url });
+  safeSet('aethelgard-share-link', { url });
   updateWaButton(url);
 }
 
@@ -1095,14 +1184,14 @@ function updateWaButton(url){
 }
 
 // ---------- INIT ----------
-(async function init(){
-  await loadState();
-  await loadLog();
-  await loadGM();
-  await loadCharacters();
-  await loadBestiary();
-  await loadCombatLog();
-  await loadShareLink();
+(function init(){
+  loadState();
+  loadLog();
+  loadGM();
+  loadCharacters();
+  loadBestiary();
+  loadCombatLog();
+  loadShareLink();
   showTerritory('neutral');
 })();
 </script>
