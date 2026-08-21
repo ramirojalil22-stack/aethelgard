@@ -1,322 +1,1110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Eclipse de Aethelgard - Ficha de Personaje</title>
-    <style>
-        :root {
-            --blood: #812a20;
-            --ember: #c1502e;
-            --iron: #6b7480;
-            --astral: #b89a4f;
-            --sanguine: #556b2f;
-            --umbra: #4a3b6b;
-            --bg-dark: #0f0f12;
-            --panel-bg: #1a1a20;
-            --border-color: #3a3a45;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Eclipse de Aethelgard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #0b0908;
+    --void-2: #14100e;
+    --parchment: #e8dcc4;
+    --parchment-dim: #a89a7c;
+    --blood: #8f2a20;
+    --ember: #c1502e;
+    --iron: #6b7480;
+    --astral: #b89a4f;
+    --sanguine: #556b2f;
+    --umbra: #4a3b6b;
+    --line: rgba(232,220,196,0.12);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: radial-gradient(ellipse at 50% -10%, #241612 0%, var(--void) 55%), var(--void);
+    color: var(--parchment);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .noise{
+    position:fixed; inset:0; pointer-events:none; opacity:0.05; z-index:1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  header{
+    text-align:center; padding: 56px 20px 36px; position:relative; z-index:2;
+    border-bottom: 1px solid var(--line);
+  }
+  h1{
+    font-family:'Cinzel Decorative', serif; font-weight:900;
+    font-size: clamp(28px, 5vw, 52px);
+    letter-spacing: 2px;
+    background: linear-gradient(180deg, #f1e3c4 0%, var(--ember) 65%, var(--blood) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 0 40px rgba(193,80,46,0.25);
+  }
+  .subtitle{ color:var(--parchment-dim); letter-spacing:4px; font-size:13px; text-transform:uppercase; margin-top:10px; font-family:'JetBrains Mono',monospace;}
+  .status-bar{
+    display:flex; justify-content:center; gap:28px; margin-top:22px; flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--parchment-dim); text-transform:uppercase; letter-spacing:1px;
+  }
+  .status-bar span b{ color: var(--ember); }
 
-        body {
-            font-family: 'Cinzel', 'Georgia', serif;
-            background-color: var(--bg-dark);
-            color: #dcdcdc;
-            margin: 0;
-            padding: 15px;
-        }
+  section{ max-width: 980px; margin: 0 auto; padding: 50px 24px; position:relative; z-index:2; }
+  .section-title{
+    font-family:'Cinzel Decorative',serif; font-size:22px; color:var(--astral);
+    letter-spacing:2px; margin-bottom:6px; display:flex; align-items:center; gap:14px;
+  }
+  .section-title::after{ content:''; flex:1; height:1px; background: linear-gradient(90deg, var(--line), transparent);}
+  .section-desc{ color:var(--parchment-dim); font-size:15px; margin-bottom:28px; font-style:italic;}
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--panel-bg);
-            border: 2px solid var(--astral);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
-        }
+  /* MAP */
+  .map-wrap{ display:flex; justify-content:center; }
+  svg{ width:100%; max-width:620px; height:auto; }
+  .node{ cursor:pointer; transition: filter 0.2s; }
+  .node:hover .node-circle{ filter: brightness(1.3); }
+  .node-circle{ transition: all 0.3s; }
+  .node-label{ font-family:'Cinzel Decorative',serif; font-size:13px; fill: var(--parchment); text-anchor:middle; pointer-events:none;}
+  .node-sub{ font-family:'JetBrains Mono',monospace; font-size:8px; fill: var(--parchment-dim); text-anchor:middle; pointer-events:none; text-transform:uppercase; letter-spacing:1px;}
+  .link{ stroke: var(--line); stroke-width:1.5; stroke-dasharray: 4 4; }
+  .center-pulse{ animation: pulse 2.5s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:0.5; r:14;} 50%{ opacity:1; r:18;} }
 
-        h1, h2, h3 {
-            color: var(--astral);
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 0;
-        }
+  .territory-detail{
+    margin-top: 24px; padding: 20px 24px; background: var(--void-2);
+    border: 1px solid var(--line); border-left: 3px solid var(--ember);
+    display:none; font-size:16px; color: var(--parchment-dim);
+  }
+  .territory-detail.active{ display:block; }
+  .territory-detail h3{ font-family:'Cinzel Decorative',serif; color: var(--parchment); font-size:18px; margin-bottom:8px; letter-spacing:1px;}
 
-        .section {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
+  /* NARRATIVE LOG */
+  .log-entry{
+    border-left: 2px solid var(--iron); padding: 4px 0 20px 20px; margin-bottom: 4px; position:relative;
+  }
+  .log-entry::before{ content:''; position:absolute; left:-5px; top:6px; width:8px; height:8px; background:var(--ember); border-radius:50%; }
+  .log-entry h4{ font-family:'Cinzel Decorative',serif; font-size:16px; color:var(--astral); margin-bottom:6px; letter-spacing:1px;}
+  .log-entry p{ color: var(--parchment); white-space:pre-wrap; }
+  .log-entry time{ display:block; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--parchment-dim); margin-top:8px; }
+  .empty-state{ color: var(--parchment-dim); font-style:italic; padding: 20px 0;}
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+  .add-log{ margin-top: 24px; border:1px dashed var(--line); padding:18px; }
+  .add-log input, .add-log textarea{
+    width:100%; background: var(--void); border:1px solid var(--line); color: var(--parchment);
+    font-family:'Cormorant Garamond',serif; font-size:16px; padding:10px 12px; margin-bottom:10px;
+  }
+  .add-log textarea{ min-height:90px; resize:vertical; }
+  button{
+    font-family:'JetBrains Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:1px;
+    background: var(--blood); color: var(--parchment); border:none; padding:11px 20px;
+    cursor:pointer; transition: background 0.2s; border-radius:2px;
+  }
+  button:hover{ background: var(--ember); }
+  button.ghost{ background:transparent; border:1px solid var(--iron); color:var(--parchment-dim); }
+  button.ghost:hover{ border-color: var(--ember); color: var(--parchment); }
+  button:disabled{ opacity:0.35; cursor:not-allowed; }
 
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
+  /* CHARACTER CARDS */
+  .char-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(360px,1fr)); gap:18px; }
+  .char-card{
+    background: linear-gradient(160deg, var(--void-2), var(--void));
+    border: 1px solid var(--line); padding: 20px; position:relative;
+  }
+  .char-card::before{
+    content: attr(data-slot); position:absolute; top:12px; right:14px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; color: var(--parchment-dim); letter-spacing:1px;
+  }
+  .char-card label{ display:block; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--parchment-dim); text-transform:uppercase; letter-spacing:1px; margin:10px 0 4px; }
+  .char-card input, .char-card select, .char-card textarea{
+    width:100%; background: var(--void); border:1px solid var(--line); color: var(--parchment);
+    font-family:'Cormorant Garamond',serif; font-size:15px; padding:7px 10px;
+  }
+  .char-card textarea{ min-height:50px; resize:vertical; }
+  .hp-row{ display:flex; align-items:center; gap:10px; margin-top:10px;}
+  .hp-bar{ flex:1; height:8px; background: var(--void); border:1px solid var(--line); overflow:hidden;}
+  .hp-fill{ height:100%; background: linear-gradient(90deg, var(--blood), var(--ember)); transition: width 0.3s; }
+  .card-actions{ display:flex; gap:8px; margin-top:14px; }
+  .card-actions button{ flex:1; }
 
-        @media (max-width: 600px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-        }
+  /* Race mini-picker inside card */
+  .race-block{ margin-top:6px; }
+  .race-region{ font-family:'JetBrains Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--parchment-dim); margin:10px 0 4px; }
+  .race-mini-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .race-mini{
+    border:1px solid var(--line); background:var(--void); padding:7px 8px; cursor:pointer; font-size:12.5px;
+    line-height:1.3; transition: all 0.15s; text-align:left;
+  }
+  .race-mini:hover{ border-color: var(--iron); }
+  .race-mini.selected{ border-color: var(--ember); background: rgba(193,80,46,0.1); }
+  .race-mini b{ display:block; font-family:'Cinzel Decorative',serif; font-size:12px; color: var(--parchment); font-weight:700; letter-spacing:0.3px; }
+  .race-mini span{ color: var(--parchment-dim); font-size:11px; }
 
-        .form-group {
-            margin-bottom: 12px;
-        }
+  /* Attribute point-buy inside card */
+  .pool-line{ display:flex; justify-content:space-between; align-items:baseline; margin:12px 0 6px; }
+  .pool-line b{ font-family:'Cinzel Decorative',serif; color: var(--ember); font-size:18px; }
+  .pool-line b.zero{ color: var(--sanguine); }
+  .pool-line b.over{ color: var(--blood); }
+  .attr-mini-row{ display:grid; grid-template-columns: 70px 1fr auto; gap:8px; align-items:center; padding:5px 0; border-bottom:1px solid var(--line); }
+  .attr-mini-row:last-child{ border-bottom:none; }
+  .attr-mini-name{ font-family:'JetBrains Mono',monospace; font-size:11px; color: var(--parchment-dim); text-transform:uppercase; }
+  .attr-mini-controls{ display:flex; align-items:center; gap:6px; }
+  .attr-mini-btn{
+    width:22px; height:22px; border-radius:50%; border:1px solid var(--line); background:var(--void); color:var(--parchment);
+    font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .attr-mini-btn:hover:not(:disabled){ border-color: var(--ember); color: var(--ember); }
+  .attr-mini-bar{ flex:1; height:5px; background: var(--void); border-radius:3px; overflow:hidden; }
+  .attr-mini-fill{ height:100%; background: linear-gradient(90deg,var(--ember),var(--astral)); }
+  .attr-mini-score{ font-family:'Cinzel Decorative',serif; font-size:13px; text-align:right; min-width:52px; }
+  .attr-mini-score small{ display:block; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--parchment-dim); font-weight:400; }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: #b0b0b0;
-        }
+  .stat-chips{ display:grid; grid-template-columns: repeat(3,1fr); gap:8px; margin-top:14px; }
+  .stat-chip{ background: var(--void); border:1px solid var(--line); text-align:center; padding:9px 4px; }
+  .stat-chip .v{ font-family:'Cinzel Decorative',serif; color: var(--astral); font-size:16px; }
+  .stat-chip .l{ font-family:'JetBrains Mono',monospace; font-size:8.5px; color: var(--parchment-dim); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
 
-        input[type="text"], input[type="number"], select, textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            background: #0d0d10;
-            color: #fff;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+  /* DICE */
+  .dice-wrap{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+  .d20{
+    width:90px; height:90px; display:flex; align-items:center; justify-content:center;
+    font-family:'Cinzel Decorative',serif; font-size:30px; color: var(--astral);
+    border: 2px solid var(--astral); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    transition: transform 0.4s; background: var(--void-2); cursor:pointer;
+  }
+  .d20.rolling{ animation: spin 0.5s linear; }
+  @keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .dice-result{ font-family:'JetBrains Mono',monospace; color: var(--parchment-dim); font-size:14px; }
 
-        /* BOTONES DE RAZA CORREGIDOS: type="button" IMPIDE REINICIO */
-        .race-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 8px;
-        }
+  /* BESTIARY */
+  .bestiary-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:14px; }
+  .monster-card{ background: var(--void-2); border:1px solid var(--line); border-left:3px solid var(--sanguine); padding:16px 18px; }
+  .monster-card.boss{ border-left-color: var(--blood); }
+  .monster-card h4{ font-family:'Cinzel Decorative',serif; font-size:15px; color: var(--parchment); letter-spacing:0.5px; }
+  .monster-card .m-territory{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color: var(--astral); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+  .monster-card .m-trait{ color: var(--parchment-dim); font-size:14px; margin-top:8px; }
+  .monster-stats{ display:flex; gap:14px; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color: var(--parchment-dim); }
+  .monster-hp{ margin-top:10px; }
+  .monster-hp-row{ display:flex; align-items:center; gap:8px; }
+  .monster-hp-row .hp-bar{ flex:1; }
+  .monster-hp-row span{ font-family:'JetBrains Mono',monospace; font-size:11px; color: var(--parchment-dim); min-width:52px; text-align:right; }
+  .monster-hp-controls{ display:flex; gap:6px; margin-top:8px; }
+  .monster-hp-controls button{ padding:6px 10px; font-size:10px; }
 
-        .btn-race {
-            padding: 8px;
-            background: #252530;
-            color: #ccc;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+  /* REFERENCE */
+  details{ border:1px solid var(--line); margin-bottom:10px; background: var(--void-2); }
+  summary{ padding:14px 18px; cursor:pointer; font-family:'Cinzel Decorative',serif; color: var(--parchment); letter-spacing:1px; font-size:15px; }
+  .ref-list{ padding: 0 18px 18px; color: var(--parchment-dim); font-size:15px; }
+  .ref-list p{ margin-bottom:8px; }
+  .ref-list b{ color: var(--astral); }
 
-        .btn-race:hover, .btn-race.active {
-            background: var(--ember);
-            color: #fff;
-            border-color: var(--astral);
-        }
+  .save-indicator{ font-family:'JetBrains Mono',monospace; font-size:11px; color: var(--sanguine); height:14px; margin-top:8px; opacity:0; transition:opacity 0.3s;}
+  .save-indicator.show{ opacity:1; }
 
-        .stat-box {
-            text-align: center;
-            background: #111116;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
+  footer{ text-align:center; padding: 30px; color: var(--parchment-dim); font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; }
 
-        .stat-box input {
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
+  /* SHARE */
+  .share-box{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    background: var(--void-2); border:1px solid var(--line); padding:18px 20px;
+  }
+  .share-box input[type=text]{
+    flex:1; min-width:220px; background: var(--void); border:1px solid var(--line); color: var(--parchment);
+    font-family:'JetBrains Mono',monospace; font-size:13px; padding:9px 12px;
+  }
+  a.wa-btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    background:#1f6b4d; color:#eafff2; font-family:'JetBrains Mono',monospace; font-size:12px;
+    text-transform:uppercase; letter-spacing:1px; padding:11px 18px; border-radius:2px; transition:background 0.2s;
+  }
+  a.wa-btn:hover{ background:#268a63; }
+  a.wa-btn.disabled{ pointer-events:none; opacity:0.35; }
 
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background: var(--blood);
-            color: white;
-            border: 1px solid var(--astral);
-            border-radius: 4px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
+  /* GM PANEL */
+  .gm-box{ background: var(--void-2); border:1px solid var(--line); border-left:3px solid var(--astral); padding:18px 20px; }
+  .gm-box input{ background: var(--void); border:1px solid var(--line); color: var(--parchment); font-family:'JetBrains Mono',monospace; font-size:14px; padding:9px 12px; width:200px; margin-right:10px; }
+  .gm-status{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-top:10px; }
+  .gm-status.on{ color: var(--sanguine); }
+  .gm-status.off{ color: var(--parchment-dim); }
 
-        .btn-submit:hover {
-            background: var(--ember);
-        }
+  .badge{
+    font-family:'JetBrains Mono',monospace; font-size:10px; background: var(--blood); color: var(--parchment);
+    padding:2px 8px; border-radius:10px; margin-left:10px; vertical-align:middle;
+  }
+  .badge.don{ background: var(--umbra); }
+  .badge.dominio{ background: var(--astral); color: var(--void); }
 
-        .status-banner {
-            margin-top: 15px;
-            padding: 10px;
-            background: #2e7d32;
-            color: white;
-            text-align: center;
-            border-radius: 4px;
-            display: none;
-        }
-    </style>
+  /* COMBAT */
+  .combat-panel{ background: var(--void-2); border:1px solid var(--line); border-left:3px solid var(--blood); padding:20px 22px; }
+  .combat-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  @media(max-width:600px){ .combat-row{ grid-template-columns:1fr; } }
+  .combat-panel label{ display:block; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--parchment-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+  .combat-panel select{ width:100%; background: var(--void); border:1px solid var(--line); color: var(--parchment); font-family:'Cormorant Garamond',serif; font-size:15px; padding:8px 10px; }
+  .dominio-toggle{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-family:'JetBrains Mono',monospace; font-size:12px; color: var(--astral); }
+  .combat-log{ margin-top:18px; }
+  .combat-log-entry{ border-left:2px solid var(--blood); padding:8px 0 8px 14px; margin-bottom:6px; font-size:15px; color: var(--parchment); }
+  .combat-log-entry small{ display:block; font-family:'JetBrains Mono',monospace; font-size:10.5px; color: var(--parchment-dim); margin-top:3px; }
+</style>
 </head>
 <body>
+<div class="noise"></div>
 
-<div class="container">
-    <h1>El Eclipse de Aethelgard</h1>
-    
-    <form id="sheetForm">
-        <!-- SECCIÓN BÁSICA -->
-        <div class="section">
-            <h2>Datos del Personaje</h2>
-            <div class="grid-2">
-                <div class="form-group">
-                    <label for="charName">Nombre del Personaje</label>
-                    <input type="text" id="charName" required>
-                </div>
-                <div class="form-group">
-                    <label for="charClass">Clase</label>
-                    <select id="charClass">
-                        <option value="Guerrero">Guerrero</option>
-                        <option value="Mago">Mago</option>
-                        <option value="Pícaro">Pícaro</option>
-                        <option value="Clérigo">Clérigo</option>
-                        <option value="Paladín">Paladín</option>
-                        <option value="Explorador">Explorador</option>
-                    </select>
-                </div>
-            </div>
+<header>
+  <h1>El Eclipse de Aethelgard</h1>
+  <div class="subtitle">Registro viviente de campaña · 4 jugadores</div>
+  <div class="status-bar" id="statusBar">
+    <span>Tensión global: <b id="tensionVal">4/4</b></span>
+    <span>Capítulo: <b id="chapterVal">0</b></span>
+    <span>Amenaza activa: <b id="threatVal">Asesino desconocido</b></span>
+  </div>
+</header>
 
-            <div class="form-group">
-                <label>Raza (Haz clic para seleccionar):</label>
-                <input type="hidden" id="selectedRace" value="Humano">
-                <div class="race-grid">
-                    <!-- Todos llevan type="button" para NO enviar ni reiniciar la página -->
-                    <button type="button" class="btn-race active" onclick="setRace(this, 'Humano')">Humano</button>
-                    <button type="button" class="btn-race" onclick="setRace(this, 'Elfo')">Elfo</button>
-                    <button type="button" class="btn-race" onclick="setRace(this, 'Enano')">Enano</button>
-                    <button type="button" class="btn-race" onclick="setRace(this, 'Orco')">Orco</button>
-                    <button type="button" class="btn-race" onclick="setRace(this, 'Tiefling')">Tiefling</button>
-                    <button type="button" class="btn-race" onclick="setRace(this, 'Gnomo')">Gnomo</button>
-                </div>
-            </div>
-        </div>
+<section id="compartir">
+  <div class="section-title">Compartir por WhatsApp</div>
+  <div class="section-desc">Pega aquí la URL de tu página web (ej: Netlify). Después cualquiera puede compartirla con este botón.</div>
+  <div class="share-box">
+    <input type="text" id="shareLinkInput" placeholder="https://tu-sitio.netlify.app">
+    <button type="button" onclick="saveShareLink()">Guardar link</button>
+    <a href="#" id="waBtn" class="wa-btn disabled" target="_blank">📲 Compartir por WhatsApp</a>
+  </div>
+</section>
 
-        <!-- ATRIBUTOS -->
-        <div class="section">
-            <h2>Atributos Principales</h2>
-            <div class="grid-3">
-                <div class="stat-box">
-                    <label for="str">Fuerza</label>
-                    <input type="number" id="str" value="10">
-                </div>
-                <div class="stat-box">
-                    <label for="dex">Destreza</label>
-                    <input type="number" id="dex" value="10">
-                </div>
-                <div class="stat-box">
-                    <label for="con">Constitución</label>
-                    <input type="number" id="con" value="10">
-                </div>
-                <div class="stat-box">
-                    <label for="int">Inteligencia</label>
-                    <input type="number" id="int" value="10">
-                </div>
-                <div class="stat-box">
-                    <label for="wis">Sabiduría</label>
-                    <input type="number" id="wis" value="10">
-                </div>
-                <div class="stat-box">
-                    <label for="cha">Carisma</label>
-                    <input type="number" id="cha" value="10">
-                </div>
-            </div>
-        </div>
-        <!-- DETALLES Y NOTAS -->
-        <div class="section">
-            <h2>Habilidades e Inventario</h2>
-            <div class="form-group">
-                <label for="equipment">Equipo e Inventario</label>
-                <textarea id="equipment" rows="3" placeholder="Espada corta, armadura de cuero..."></textarea>
-            </div>
-            <div class="form-group">
-                <label for="notes">Notas / Trasfondo</label>
-                <textarea id="notes" rows="3" placeholder="Historia del personaje..."></textarea>
-            </div>
-        </div>
+<section id="modo-gm">
+  <div class="section-title">Modo GM</div>
+  <div class="section-desc">Control maestro para herramientas avanzadas y combates.</div>
+  <div class="gm-box" id="gmBox"></div>
+</section>
 
-        <button type="submit" class="btn-submit">Guardar Ficha Directamente</button>
-    </form>
+<section id="mapa">
+  <div class="section-title">I · El Continente Fracturado</div>
+  <div class="section-desc">Toca un territorio para revelar su naturaleza.</div>
+  <div class="map-wrap">
+    <svg viewBox="0 0 400 400">
+      <line class="link" x1="200" y1="200" x2="200" y2="80"/>
+      <line class="link" x1="200" y1="200" x2="80" y2="200"/>
+      <line class="link" x1="200" y1="200" x2="320" y2="200"/>
+      <line class="link" x1="200" y1="200" x2="200" y2="320"/>
 
-    <div id="statusMsg" class="status-banner">¡Ficha actualizada y aprobada correctamente!</div>
-</div>
+      <g class="node" onclick="showTerritory('neutral')">
+        <circle class="node-circle center-pulse" cx="200" cy="200" r="16" fill="none" stroke="#e8dcc4" stroke-width="2"/>
+        <text class="node-label" x="200" y="238">Territorio Neutral</text>
+        <text class="node-sub" x="200" y="250">Cámara sellada</text>
+      </g>
+
+      <g class="node" onclick="showTerritory('bastilla')">
+        <circle class="node-circle" cx="200" cy="80" r="24" fill="rgba(107,116,128,0.25)" stroke="#6b7480" stroke-width="2"/>
+        <text class="node-label" x="200" y="46">Bastilla de Hierro</text>
+        <text class="node-sub" x="200" y="60">Norte</text>
+      </g>
+
+      <g class="node" onclick="showTerritory('grieta')">
+        <circle class="node-circle" cx="80" cy="200" r="24" fill="rgba(74,59,107,0.3)" stroke="#4a3b6b" stroke-width="2"/>
+        <text class="node-label" x="80" y="170">Grieta de Umbra</text>
+        <text class="node-sub" x="80" y="184">Oeste</text>
+      </g>
+
+      <g class="node" onclick="showTerritory('astral')">
+        <circle class="node-circle" cx="320" cy="200" r="24" fill="rgba(184,154,79,0.25)" stroke="#b89a4f" stroke-width="2"/>
+        <text class="node-label" x="320" y="170">Dominación Astral</text>
+        <text class="node-sub" x="320" y="184">Este</text>
+      </g>
+
+      <g class="node" onclick="showTerritory('espesura')">
+        <circle class="node-circle" cx="200" cy="320" r="24" fill="rgba(85,107,47,0.3)" stroke="#556b2f" stroke-width="2"/>
+        <text class="node-label" x="200" y="360">Espesura Sangrienta</text>
+        <text class="node-sub" x="200" y="374">Sur</text>
+      </g>
+    </svg>
+  </div>
+  <div class="territory-detail" id="territoryDetail"></div>
+</section>
+
+<section id="log">
+  <div class="section-title">II · Log Narrativo</div>
+  <div class="section-desc">El registro de todo lo vivido por el grupo, capítulo a capítulo.</div>
+  <div id="logEntries"><div class="empty-state">Aún no hay capítulos registrados.</div></div>
+
+  <div class="add-log">
+    <input type="text" id="newChapterTitle" placeholder="Título del capítulo (ej: Capítulo 1 — La Puerta Sellada)">
+    <textarea id="newChapterText" placeholder="Pega o escribe aquí el texto narrativo de este turno..."></textarea>
+    <button type="button" onclick="addLogEntry()">Guardar capítulo en el registro</button>
+    <div class="save-indicator" id="logSaveIndicator">Guardado ✓</div>
+  </div>
+</section>
+
+<section id="personajes">
+  <div class="section-title">III · Fichas de Personaje</div>
+  <div class="section-desc">Elige raza y reparte 20 puntos de atributo (base 10). Los cambios se guardan directamente.</div>
+  <div class="char-grid" id="charGrid"></div>
+</section>
+
+<section id="dados">
+  <div class="section-title">IV · Tirada de d20</div>
+  <div class="dice-wrap">
+    <div class="d20" id="d20" onclick="rollDice()">?</div>
+    <div>
+      <div class="dice-result" id="diceResult">Toca el dado para tirar.</div>
+      <div class="dice-result" style="margin-top:4px;">Dificultad sugerida por el GM se indica en el chat.</div>
+    </div>
+  </div>
+</section>
+
+<section id="bestiario">
+  <div class="section-title">V · Bestiario de Enemigos</div>
+  <div class="section-desc">Referencia del GM. El HP restante se guarda para todo el grupo — útil para llevar el combate en vivo.</div>
+  <div class="bestiary-grid" id="bestiaryGrid"></div>
+</section>
+
+<section id="combate">
+  <div class="section-title">VI · Cálculo de Combate</div>
+  <div class="section-desc">Elegí el enemigo y el objetivo, tirá el ataque y el sistema calcula el impacto y el daño según las características del enemigo.</div>
+  <div id="combatPanel" class="combat-panel"></div>
+</section>
+
+<section id="referencia">
+  <div class="section-title">VII · Referencia Rápida</div>
+  <details>
+    <summary>Catálogo de Dones Singulares</summary>
+    <div class="ref-list" id="donesList"></div>
+  </details>
+  <details>
+    <summary>Catálogo de Dominios Máximos</summary>
+    <div class="ref-list" id="dominiosList"></div>
+  </details>
+  <details>
+    <summary>Reglas de oro</summary>
+    <div class="ref-list">
+      <p><b>Atributos D&D:</b> base 10 en cada uno, 20 puntos libres a repartir. FUE (+2 daño/punto), DES (+1 Defensa/2 puntos), CON (+5 HP/punto), INT (+3% potencia de Don/punto), SAB (percepción/resistencia), CAR (persuasión/impacto social).</p>
+      <p><b>Dominio Máximo:</b> 1 vez por combate, dura 3 turnos, potencia el Don al 100%, ningún ataque falla. Tras expirar, el personaje queda exhausto.</p>
+      <p><b>El GM nunca decide</b> acciones, pensamientos ni diálogos de los personajes de los jugadores.</p>
+    </div>
+  </details>
+</section>
+
+<footer>
+  Aethelgard persiste entre sesiones · datos guardados localmente · <button type="button" class="ghost" onclick="resetAll()" style="margin-left:8px;">Reiniciar registro</button>
+</footer>
 
 <script>
-    const raceInput = document.getElementById('selectedRace');
-    const form = document.getElementById('sheetForm');
-    const statusMsg = document.getElementById('statusMsg');
+const territories = {
+  neutral: { name:"Territorio Neutral", desc:"Corazón político de Aethelgard. La Cámara del Equilibrio, donde murió el Mediador Aurelio Vance, permanece sellada por un poder desconocido. Aquí comienza todo." },
+  bastilla: { name:"La Bastilla de Hierro (Norte)", desc:"Oligarquía industrial de calderas y hollín. Artesanos rebeldes se alzan contra los barones del acero, que planean invadir el Sur para alimentar sus máquinas." },
+  grieta: { name:"La Grieta de Umbra (Oeste)", desc:"Narco-estado gobernado por carteles del abismo que trafican con Escarzo. Financian en secreto la desestabilización de las otras tres naciones." },
+  astral: { name:"La Dominación Astral (Este)", desc:"Teocracia inquisitorial que purga toda 'imperfección'. Mantiene un bloqueo naval violento sobre el Oeste, ahogando su comercio." },
+  espesura: { name:"La Espesura Sangrienta (Sur)", desc:"Tribus fracturadas por una plaga de rabia ancestral. Incursiones masivas y descontroladas azotan las fronteras vecinas." }
+};
 
-    // Asignar raza sin recargar ni borrar nada
-    function setRace(btn, race) {
-        document.querySelectorAll('.btn-race').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        raceInput.value = race;
+const dones = [
+  ["Cinemática de Mercurio","Metal líquido que se adhiere y endurece al instante: escudos, cuchillas o articulaciones inmovilizadas."],
+  ["Impulso de Hilo Táctil","Hilos invisibles de alta tensión para balancearte, usar rivales como escudo o descuartizar proyectiles."],
+  ["Inercia de Impacto","Almacena energía cinética de golpes bloqueados y la libera en un puñetazo capaz de atravesar muros."],
+  ["Gravedad Inversa","Altera la atracción gravitacional de lo que tocas: un enemigo de 100kg puede salir volando."],
+  ["Ecos de la Sombrilla","Tu sombra cobra vida como ente físico independiente, atacando desde ángulos ciegos."],
+  ["Combustión de Calima","Absorbe calor y humedad; genera escarcha defensiva y dispara plasma ardiente."],
+  ["Efecto Rebote Vectorial","Marcas elásticas de aire en superficies: lo que choca sale despedido al doble de velocidad."],
+  ["Voz del Ahorcado","Frecuencias de sonido densas que se materializan para desviar ataques o romper estructuras."],
+  ["Metamorfosis Quimérica","Transforma partes del cuerpo en anatomía de bestias mitológicas."],
+  ["Sustitución de Materia","Intercambio instantáneo de posición con cualquier objeto inerte similar en tu campo de visión."],
+  ["Red Alquímica","Descompone y reordena materia inerte al tocarla: trincheras, jaulas, estructuras colapsadas."],
+  ["Canto de las Quemaduras","Transfiere dolor y heridas físicas al enemigo más cercano con solo rozarlo."]
+];
+
+const dominios = [
+  ["Osario de las Mil Hojas","Espadas flotantes que atacan automáticamente a los objetivos."],
+  ["Cámara de la Plaga Negra","Niebla que absorbe salud enemiga y la transfiere al grupo cada turno."],
+  ["Santuario del Espejo Roto","Espejos que duplican y proyectan los ataques del grupo desde ángulos imposibles."],
+  ["Horizonte de Tiempo Suspendido","El tiempo se congela para los enemigos durante 1 turno."],
+  ["Coliseo del Duelo Sangriento","Anula magia y proyectiles lejanos; solo cuerpo a cuerpo."],
+  ["Cúpula de la Agonía Compartida","Une la vitalidad enemiga: el daño a uno se multiplica y reparte entre todos."],
+  ["Forja de Almas Condenadas","Convierte magia enemiga bloqueada en armadura irrompible para tus aliados."],
+  ["Tablero del Gran Enroque","Mueve a cualquier aliado o enemigo a voluntad una vez por turno."],
+  ["Prisión de la Guillotina de Hilos","Cuerdas cortantes castigan a quien intente correr o moverse."],
+  ["Teatro de los Titiriteros","Los cadáveres del campo de batalla se levantan a luchar por el grupo."],
+  ["Casino de la Fortuna Ciega","Tirada de dado por turno con efectos aleatorios masivos."],
+  ["Pantano del Abismo","Brea viva que frena, inmoviliza y succiona lentamente a los enemigos."]
+];
+
+document.getElementById('donesList').innerHTML = dones.map(d=>`<p><b>${d[0]}:</b> ${d[1]}</p>`).join('');
+document.getElementById('dominiosList').innerHTML = dominios.map(d=>`<p><b>${d[0]}:</b> ${d[1]}</p>`).join('');
+
+function showTerritory(key){
+  const t = territories[key];
+  const el = document.getElementById('territoryDetail');
+  el.innerHTML = `<h3>${t.name}</h3><p>${t.desc}</p>`;
+  el.classList.add('active');
+}
+
+// ---------- STORAGE COMPATIBLE ----------
+async function safeGet(key){
+  try{
+    const r = localStorage.getItem(key);
+    return r ? JSON.parse(r) : null;
+  }catch(e){ return null; }
+}
+
+async function safeSet(key, value){
+  try{
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+// ---------- CAMPAIGN STATE ----------
+async function loadState(){
+  const s = await safeGet('aethelgard-state');
+  if(s){
+    document.getElementById('tensionVal').textContent = s.tension || '4/4';
+    document.getElementById('chapterVal').textContent = s.chapter ?? '0';
+    document.getElementById('threatVal').textContent = s.threat || 'Ninguna';
+  }
+}
+
+// ---------- NARRATIVE LOG ----------
+async function loadLog(){
+  const log = await safeGet('aethelgard-log') || [];
+  const container = document.getElementById('logEntries');
+  if(log.length === 0){
+    container.innerHTML = '<div class="empty-state">Aún no hay capítulos registrados.</div>';
+    return;
+  }
+  container.innerHTML = log.map(entry => `
+    <div class="log-entry">
+      <h4>${escapeHtml(entry.title)}</h4>
+      <p>${escapeHtml(entry.text)}</p>
+      <time>${entry.date}</time>
+    </div>
+  `).reverse().join('');
+}
+
+async function addLogEntry(){
+  const titleInput = document.getElementById('newChapterTitle');
+  const textInput = document.getElementById('newChapterText');
+  const title = titleInput.value.trim();
+  const text = textInput.value.trim();
+  if(!title || !text) return;
+
+  const log = await safeGet('aethelgard-log') || [];
+  log.push({ title, text, date: new Date().toLocaleString('es-ES') });
+  const ok = await safeSet('aethelgard-log', log);
+
+  const s = await safeGet('aethelgard-state') || { tension:'4/4', chapter:0, threat:'Asesino desconocido' };
+  s.chapter = log.length;
+  await safeSet('aethelgard-state', s);
+
+  if(ok){
+    titleInput.value = '';
+    textInput.value = '';
+    await loadLog();
+    await loadState();
+    flashSave('logSaveIndicator');
+  }
+}
+
+function flashSave(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('show');
+  setTimeout(()=> el.classList.remove('show'), 1800);
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ---------- CHARACTER SHEET DATA ----------
+const RACES = [
+  {region:"Bastión de Hierro", id:"humanos", name:"Humanos", desc:"+1 a todos los atributos · +10 HP máx · +5 Defensa base.",
+    bonus:{FUE:1,DES:1,CON:1,INT:1,SAB:1,CAR:1}, hp:10, def:5},
+  {region:"Bastión de Hierro", id:"mecanizados", name:"Mecanizados / Forjados", desc:"+2 CON, +1 FUE · +20 HP máx · Dones de impacto/metal +15% daño.",
+    bonus:{CON:2,FUE:1}, hp:20, def:0},
+  {region:"Dominación Astral", id:"elfos", name:"Elfos Astrales", desc:"+2 SAB, +1 INT · +10% potencia de Don · +1 en d20 al canalizar energía.",
+    bonus:{SAB:2,INT:1}, hp:0, def:0},
+  {region:"Dominación Astral", id:"celestiales", name:"Celestiales / Seres Benditos", desc:"+2 CAR, +1 SAB · Inmunidad temp. a estados alterados · Resist. elemental +5.",
+    bonus:{CAR:2,SAB:1}, hp:0, def:0},
+  {region:"Espesura Sangrienta", id:"bestia", name:"Hombres Bestia / Licántropos", desc:"+2 FUE, +1 CON · Ataques aplican sangrado de 8 HP/turno.",
+    bonus:{FUE:2,CON:1}, hp:0, def:0},
+  {region:"Espesura Sangrienta", id:"silvanos", name:"Silvanos / Druídicos", desc:"+2 DES, +1 SAB · +5 Iniciativa/Esquiva · Regen. 3 HP/turno en naturaleza.",
+    bonus:{DES:2,SAB:1}, hp:0, def:0},
+  {region:"Grieta de Umbra", id:"enanos", name:"Enanos de la Grieta", desc:"+2 CON, +1 FUE · +15 HP máx · +5 resist. veneno/corrosivo · +3 Armadura.",
+    bonus:{CON:2,FUE:1}, hp:15, def:3},
+  {region:"Grieta de Umbra", id:"abisales", name:"Abisales / Trazados de Umbra", desc:"+2 INT, +1 CAR · +15% Daño Crítico · +5 Engaño/Intimidación.",
+    bonus:{INT:2,CAR:1}, hp:0, def:0},
+];
+const ATTRS = [
+  {key:"FUE", name:"Fuerza"}, {key:"DES", name:"Destreza"}, {key:"CON", name:"Constitución"},
+  {key:"INT", name:"Inteligencia"}, {key:"SAB", name:"Sabiduría"}, {key:"CAR", name:"Carisma"},
+];
+const POOL = 20;
+const territoryOptions = ['Bastilla de Hierro','Dominación Astral','Espesura Sangrienta','Grieta de Umbra','Territorio Neutral'];
+
+function defaultCharacter(){
+  return {
+    realName:'', charName:'', appearance:'', territory:'',
+    raceId:null, points:{FUE:0,DES:0,CON:0,INT:0,SAB:0,CAR:0},
+    don:'', dominio:'', dominioUsed:false, hpCurrent:100, notes:''
+  };
+}
+function cloneChar(c){ return c ? JSON.parse(JSON.stringify(c)) : defaultCharacter(); }
+function pointsUsed(c){ return ATTRS.reduce((s,a)=> s + (c.points[a.key]||0), 0); }
+function selectedRace(c){ return RACES.find(r=>r.id===c.raceId) || null; }
+function scoreOf(c,key){ const race = selectedRace(c); return 10 + (c.points[key]||0) + (race && race.bonus[key] ? race.bonus[key] : 0); }
+function mod(score){ const m = Math.floor((score-10)/2); return (m>=0?'+':'')+m; }
+function computeMaxHP(c){ const race = selectedRace(c); return 100 + (c.points.CON||0)*5 + (race?race.hp:0); }
+function computeAC(c){ const race = selectedRace(c); return 10 + Math.floor((c.points.DES||0)/2) + (race?race.def:0); }
+function computeAttackMod(c){
+  let bestKey = ATTRS[0].key, bestScore = -Infinity;
+  ATTRS.forEach(a => { const s = scoreOf(c,a.key); if(s>bestScore){ bestScore=s; bestKey=a.key; } });
+  return { key:bestKey, mod: mod(bestScore) };
+}
+
+// ---------- CHARACTER CARD RENDERING ----------
+let charactersCache = [null,null,null,null];
+let draftCache = [null,null,null,null];
+
+// CORREGIDO: Añadido type="button" a las opciones de raza para no resetear la página
+function raceMiniGrid(idx, draft){
+  const regions = [...new Set(RACES.map(r=>r.region))];
+  return regions.map(region => `
+    <div class="race-region">${region}</div>
+    <div class="race-mini-grid">
+      ${RACES.filter(r=>r.region===region).map(r => `
+        <button type="button" class="race-mini ${draft.raceId===r.id?'selected':''}" onclick="selectRace(${idx},'${r.id}')">
+          <b>${r.name}</b><span>${r.desc}</span>
+        </button>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function attrMiniRows(idx, draft){
+  const used = pointsUsed(draft);
+  const remaining = POOL - used;
+  return ATTRS.map(a => {
+    const val = draft.points[a.key]||0;
+    const score = 10 + val;
+    return `
+      <div class="attr-mini-row">
+        <div class="attr-mini-name">${a.name}</div>
+        <div class="attr-mini-controls">
+          <button type="button" class="attr-mini-btn" ${val<=0?'disabled':''} onclick="adjustAttr(${idx},'${a.key}',-1)">−</button>
+          <div class="attr-mini-bar"><div class="attr-mini-fill" style="width:${Math.min(val,20)/20*100}%"></div></div>
+          <button type="button" class="attr-mini-btn" ${remaining<=0?'disabled':''} onclick="adjustAttr(${idx},'${a.key}',1)">+</button>
+        </div>
+        <div class="attr-mini-score">${score}<small>mod ${mod(score)}</small></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function charCardTemplate(idx, draft){
+  const used = pointsUsed(draft);
+  const remaining = POOL - used;
+  const remClass = remaining===0 ? 'zero' : (remaining<0 ? 'over' : '');
+  const maxHP = computeMaxHP(draft);
+  const ac = computeAC(draft);
+  const atk = computeAttackMod(draft);
+  const hpCur = Math.min(draft.hpCurrent==null?maxHP:draft.hpCurrent, maxHP);
+
+  return `
+    <div class="char-card" data-slot="Jugador ${idx+1}">
+      <label>Nombre real</label>
+      <input id="c${idx}-real" value="${escapeHtml(draft.realName)}" placeholder="Tu nombre">
+      <label>Personaje</label>
+      <input id="c${idx}-name" value="${escapeHtml(draft.charName)}" placeholder="Nombre del personaje">
+      <label>Apariencia</label>
+      <textarea id="c${idx}-appearance" placeholder="Descripción breve">${escapeHtml(draft.appearance)}</textarea>
+      <label>Territorio de origen</label>
+      <select id="c${idx}-territory">
+        <option value="">-- Selecciona --</option>
+        ${territoryOptions.map(t=>`<option value="${t}" ${draft.territory===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+
+      <label>Raza</label>
+      <div class="race-block">${raceMiniGrid(idx, draft)}</div>
+
+      <div class="pool-line"><span class="attr-mini-name">Puntos de atributo restantes</span><b class="${remClass}">${remaining}</b></div>
+      <div>${attrMiniRows(idx, draft)}</div>
+
+      <div class="stat-chips">
+        <div class="stat-chip"><div class="v">${maxHP}</div><div class="l">HP Máx</div></div>
+        <div class="stat-chip"><div class="v">${ac}</div><div class="l">Armadura</div></div>
+        <div class="stat-chip"><div class="v">${atk.mod}</div><div class="l">Ataque (${atk.key})</div></div>
+      </div>
+
+      <label>Don Singular</label>
+      <input id="c${idx}-don" value="${escapeHtml(draft.don)}" placeholder="Nombre del Don">
+      <label>Dominio Máximo</label>
+      <input id="c${idx}-dominio" value="${escapeHtml(draft.dominio)}" placeholder="Nombre del Dominio">
+
+      <label>Salud actual: <span id="c${idx}-hpval">${hpCur}</span>/${maxHP}</label>
+      <input type="range" id="c${idx}-hp" min="0" max="${maxHP}" value="${hpCur}" oninput="updateHpCurrent(${idx}, this.value)">
+      <div class="hp-bar"><div class="hp-fill" id="c${idx}-hpbar" style="width:${maxHP?Math.round(hpCur/maxHP*100):0}%"></div></div>
+
+      <label>Notas / Inventario</label>
+      <textarea id="c${idx}-notes" placeholder="Objetos, estados, heridas...">${escapeHtml(draft.notes)}</textarea>
+
+      <div class="card-actions">
+        <button type="button" onclick="saveCharacter(${idx})">Guardar Ficha</button>
+        <button type="button" class="ghost" onclick="toggleDominio(${idx})">${draft.dominioUsed ? 'Marcar Dominio disponible' : 'Marcar Dominio usado'}</button>
+      </div>
+      <div class="save-indicator" id="c${idx}-saved">Guardado ✓</div>
+    </div>
+  `;
+}
+
+function renderCharGrid(){
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = [0,1,2,3].map(i => charCardTemplate(i, draftCache[i])).join('');
+}
+
+async function loadCharacters(){
+  const data = await safeGet('aethelgard-characters') || [null,null,null,null];
+  charactersCache = data;
+  draftCache = [0,1,2,3].map(i => cloneChar(data[i]));
+  renderCharGrid();
+}
+
+function selectRace(idx, raceId){
+  draftCache[idx].raceId = draftCache[idx].raceId === raceId ? null : raceId;
+  renderCharGrid();
+}
+
+function adjustAttr(idx, key, delta){
+  const draft = draftCache[idx];
+  const used = pointsUsed(draft);
+  if(delta > 0 && used >= POOL) return;
+  if(delta < 0 && (draft.points[key]||0) <= 0) return;
+  draft.points[key] = (draft.points[key]||0) + delta;
+  renderCharGrid();
+}
+
+function updateHpCurrent(idx, val){
+  draftCache[idx].hpCurrent = parseInt(val);
+  const maxHP = computeMaxHP(draftCache[idx]);
+  document.getElementById(`c${idx}-hpval`).textContent = val;
+  document.getElementById(`c${idx}-hpbar`).style.width = (maxHP ? Math.round(val/maxHP*100) : 0) + '%';
+}
+
+function readTextFieldsInto(idx){
+  const get = id => document.getElementById(id).value;
+  const draft = draftCache[idx];
+  draft.realName = get(`c${idx}-real`);
+  draft.charName = get(`c${idx}-name`);
+  draft.appearance = get(`c${idx}-appearance`);
+  draft.territory = get(`c${idx}-territory`);
+  draft.don = get(`c${idx}-don`);
+  draft.dominio = get(`c${idx}-dominio`);
+  draft.notes = get(`c${idx}-notes`);
+  draft.hpCurrent = parseInt(get(`c${idx}-hp`));
+  return draft;
+}
+
+// CORREGIDO: Guardado directo sin necesidad de aprobación de GM
+async function saveCharacter(idx){
+  const draft = readTextFieldsInto(idx);
+  charactersCache[idx] = cloneChar(draft);
+  await safeSet('aethelgard-characters', charactersCache);
+  flashSave(`c${idx}-saved`);
+  await loadCharacters();
+}
+
+async function toggleDominio(idx){
+  draftCache[idx].dominioUsed = !draftCache[idx].dominioUsed;
+  charactersCache[idx] = charactersCache[idx] || cloneChar(draftCache[idx]);
+  charactersCache[idx].dominioUsed = draftCache[idx].dominioUsed;
+  await safeSet('aethelgard-characters', charactersCache);
+  renderCharGrid();
+}
+
+// ---------- DICE ----------
+function rollDice(){
+  const d = document.getElementById('d20');
+  d.classList.add('rolling');
+  d.textContent = '...';
+  setTimeout(()=>{
+    const result = Math.floor(Math.random()*20)+1;
+    d.classList.remove('rolling');
+    d.textContent = result;
+    let msg = `Resultado: ${result} / 20`;
+    if(result === 20) msg += ' — ¡CRÍTICO!';
+    if(result === 1) msg += ' — Pifia crítica.';
+    document.getElementById('diceResult').textContent = msg;
+  }, 500);
+}
+
+// ---------- BESTIARY ----------
+const BESTIARY = [
+  {id:"automata", name:"Autómata de Vapor", territory:"Bastilla de Hierro", hp:40, ac:16, dmg:"2d6+3", atk:5,
+    trait:"Inmune a sangrado. Al morir, explota causando 3d6 de daño en área.", don:null, dominio:null},
+  {id:"verdugo", name:"Verdugo de Hollín", territory:"Bastilla de Hierro", hp:55, ac:14, dmg:"1d8+4", atk:6,
+    trait:"Sus cadenas inmovilizan a un objetivo durante 1 turno.",
+    don:{name:"Cadenas de Hierro Vivo", extraDamage:"1d4", desc:"Las cadenas muerden al objetivo antes del golpe principal."}, dominio:null},
+  {id:"susurrante", name:"Susurrante del Vacío", territory:"Grieta de Umbra", hp:30, ac:12, dmg:"1d10", atk:4,
+    trait:"Invisible salvo bajo luz directa.",
+    don:{name:"Manto de Sombras", extraDamage:"1d6", desc:"Ataca desde un ángulo ciego cuando el objetivo no lo detectó."}, dominio:null},
+  {id:"contrabandista", name:"Contrabandista Abisal", territory:"Grieta de Umbra", hp:45, ac:13, dmg:"2d4+2", atk:5,
+    trait:"Escupe Escarzo: causa alucinaciones (desventaja en la siguiente tirada del objetivo).",
+    don:{name:"Escupitajo de Escarzo", extraDamage:"1d4", desc:"El veneno corrosivo suma daño adicional al impacto."}, dominio:null},
+  {id:"inquisidor", name:"Inquisidor Sellado", territory:"Dominación Astral", hp:60, ac:17, dmg:"1d12+3", atk:7,
+    trait:"Una vez por combate, purga el Don de un objetivo durante 1 turno.",
+    don:{name:"Purga Astral", extraDamage:"1d6", desc:"Energía radiante que castiga a quien porta un Don."}, dominio:null},
+  {id:"centinela", name:"Centinela de Luz Fría", territory:"Dominación Astral", hp:35, ac:15, dmg:"2d6", atk:6,
+    trait:"Vuela y dispara rayos de energía fría a distancia.", don:null, dominio:null},
+  {id:"bestia-rabia", name:"Bestia de la Rabia Ancestral", territory:"Espesura Sangrienta", hp:70, ac:11, dmg:"2d8+5", atk:7,
+    trait:"Frenesí: +2 de daño por cada 10 HP que ha perdido (se calcula solo al atacar).",
+    don:{name:"Frenesí Sangriento", extraDamage:"0", desc:"Cuanto más herida está, más daño inflige — el cálculo de combate lo aplica automáticamente."}, dominio:null},
+  {id:"enjambre", name:"Enjambre de Zarzas Vivientes", territory:"Espesura Sangrienta", hp:25, ac:10, dmg:"1d6", atk:3,
+    trait:"Se regenera 5 HP por turno en terreno natural. Puede golpear hasta 3 objetivos.", don:null, dominio:null},
+  {id:"asesino", name:"El Asesino Desconocido", territory:"Amenaza global · Territorio Neutral", hp:90, ac:18, dmg:"2d10+4", atk:9, boss:true,
+    trait:"Ataca desde las sombras: contra un objetivo que no lo espera, el golpe es devastador.",
+    don:{name:"Filo del Eclipse", extraDamage:"2d6", desc:"Su hoja corta entre la luz y la sombra, añadiendo un tajo adicional a cada golpe."},
+    dominio:{name:"Corona del Eclipse", desc:"Una vez por combate: el siguiente golpe duplica su daño total y no puede fallar.", multiplier:2}},
+  {id:"matriarca", name:"Matriarca de la Espesura", territory:"Espesura Sangrienta · Amenaza regional", hp:100, ac:14, dmg:"3d6+4", atk:8, boss:true,
+    trait:"Comanda el Enjambre: cada turno que sigue con vida invoca una Zarza Viviente adicional.",
+    don:{name:"Aullido de la Manada", extraDamage:"1d8", desc:"Su rugido enardece a las bestias cercanas antes del ataque."},
+    dominio:{name:"Floración Carmesí", desc:"Una vez por combate: raíces espinosas emergen del suelo y duplican su daño total.", multiplier:2}},
+];
+
+let bestiaryHpCache = {};
+let bestiaryDominioUsed = {};
+
+function monsterCardTemplate(m){
+  const cur = bestiaryHpCache[m.id] ?? m.hp;
+  const pct = m.hp ? Math.max(0, Math.round(cur/m.hp*100)) : 0;
+  const badges = `
+    ${m.don ? `<span class="badge don">⚡ ${escapeHtml(m.don.name)}</span>` : ''}
+    ${m.dominio ? `<span class="badge dominio">💥 ${escapeHtml(m.dominio.name)}${bestiaryDominioUsed[m.id]?' (usado)':''}</span>` : ''}
+  `;
+  return `
+    <div class="monster-card ${m.boss?'boss':''}">
+      <h4>${escapeHtml(m.name)}${badges}</h4>
+      <div class="m-territory">${escapeHtml(m.territory)}</div>
+      <div class="monster-stats"><span>AC ${m.ac}</span><span>Ataque +${m.atk}</span><span>Daño ${escapeHtml(m.dmg)}</span></div>
+      <div class="m-trait">${escapeHtml(m.trait)}</div>
+      ${m.don ? `<div class="m-trait"><b style="color:var(--umbra);font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;">Don:</b> ${escapeHtml(m.don.desc)}</div>` : ''}
+      ${m.dominio ? `<div class="m-trait"><b style="color:var(--astral);font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;">Dominio:</b> ${escapeHtml(m.dominio.desc)}</div>` : ''}
+      <div class="monster-hp">
+        <div class="monster-hp-row">
+          <div class="hp-bar"><div class="hp-fill" style="width:${pct}%"></div></div>
+          <span>${cur}/${m.hp}</span>
+        </div>
+        <div class="monster-hp-controls">
+          <button type="button" class="ghost" onclick="adjustBestiaryHP('${m.id}',-5)">-5</button>
+          <button type="button" class="ghost" onclick="adjustBestiaryHP('${m.id}',-1)">-1</button>
+          <button type="button" class="ghost" onclick="adjustBestiaryHP('${m.id}',1)">+1</button>
+          <button type="button" class="ghost" onclick="resetBestiaryHP('${m.id}')">Reset</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBestiary(){
+  document.getElementById('bestiaryGrid').innerHTML = BESTIARY.map(monsterCardTemplate).join('');
+}
+
+async function loadBestiary(){
+  bestiaryHpCache = await safeGet('aethelgard-bestiary-hp') || {};
+  bestiaryDominioUsed = await safeGet('aethelgard-bestiary-dominio') || {};
+  renderBestiary();
+  populateCombatSelects();
+}
+
+async function adjustBestiaryHP(id, delta){
+  const m = BESTIARY.find(x=>x.id===id);
+  if(!m) return;
+  const cur = bestiaryHpCache[id] ?? m.hp;
+  bestiaryHpCache[id] = Math.max(0, Math.min(m.hp, cur + delta));
+  await safeSet('aethelgard-bestiary-hp', bestiaryHpCache);
+  renderBestiary();
+}
+
+async function resetBestiaryHP(id){
+  const m = BESTIARY.find(x=>x.id===id);
+  if(!m) return;
+  bestiaryHpCache[id] = m.hp;
+  bestiaryDominioUsed[id] = false;
+  await safeSet('aethelgard-bestiary-hp', bestiaryHpCache);
+  await safeSet('aethelgard-bestiary-dominio', bestiaryDominioUsed);
+  renderBestiary();
+  renderCombatPanel();
+}
+
+// ---------- COMBAT CALCULATOR ----------
+let combatLog = [];
+let selectedEnemyId = BESTIARY[0].id;
+let selectedTargetIdx = 0;
+
+function parseDamage(str){
+  const m = str.match(/(\d+)d(\d+)\s*([+-]\s*\d+)?/i);
+  if(!m) return { total:0, breakdown:'0' };
+  const count = parseInt(m[1]), sides = parseInt(m[2]), flat = m[3] ? parseInt(m[3].replace(/\s+/g,'')) : 0;
+  let rolls = [];
+  for(let i=0;i<count;i++) rolls.push(Math.floor(Math.random()*sides)+1);
+  const sum = rolls.reduce((a,b)=>a+b,0) + flat;
+  return { total: Math.max(0,sum), breakdown: `${rolls.join('+')}${flat?(flat>0?'+'+flat:flat):''}` };
+}
+
+function targetLabel(idx){
+  const c = charactersCache[idx];
+  return (c && c.charName) ? c.charName : `Jugador ${idx+1}`;
+}
+
+function targetAC(idx){
+  const c = charactersCache[idx];
+  return c ? computeAC(c) : 10;
+}
+
+function populateCombatSelects(){
+  renderCombatPanel();
+}
+
+function combatEnemyOptions(){
+  return BESTIARY.map(m => `<option value="${m.id}" ${selectedEnemyId===m.id?'selected':''}>${m.boss?'👑 ':''}${m.name}</option>`).join('');
+}
+function combatTargetOptions(){
+  return [0,1,2,3].map(i => `<option value="${i}" ${selectedTargetIdx===i?'selected':''}>${targetLabel(i)}</option>`).join('');
+}
+
+function renderCombatPanel(){
+  const panel = document.getElementById('combatPanel');
+  if(!panel) return;
+
+  const enemy = BESTIARY.find(m=>m.id===selectedEnemyId) || BESTIARY[0];
+  const dominioAvailable = enemy.dominio && !bestiaryDominioUsed[enemy.id];
+
+  panel.innerHTML = `
+    <div class="combat-row">
+      <div>
+        <label>Enemigo</label>
+        <select id="combatEnemy" onchange="onCombatEnemyChange(this.value)">${combatEnemyOptions()}</select>
+      </div>
+      <div>
+        <label>Objetivo</label>
+        <select id="combatTarget" onchange="onCombatTargetChange(this.value)">${combatTargetOptions()}</select>
+      </div>
+    </div>
+    ${enemy.dominio ? `
+      <div class="dominio-toggle">
+        <input type="checkbox" id="combatDominio" ${dominioAvailable?'':'disabled'} ${dominioAvailable? '' : 'checked'}>
+        <label for="combatDominio" style="margin:0;">
+          ${dominioAvailable
+            ? `Activar Dominio Máximo: ${escapeHtml(enemy.dominio.name)} — ${escapeHtml(enemy.dominio.desc)}`
+            : `Dominio Máximo (${escapeHtml(enemy.dominio.name)}) ya usado en este combate`}
+        </label>
+      </div>
+    ` : ''}
+    <button type="button" onclick="rollCombat()">🎲 Tirar ataque</button>
+    <div class="combat-log" id="combatLogList"></div>
+  `;
+  renderCombatLog();
+}
+
+function onCombatEnemyChange(id){ selectedEnemyId = id; renderCombatPanel(); }
+function onCombatTargetChange(idx){ selectedTargetIdx = parseInt(idx); renderCombatPanel(); }
+
+function renderCombatLog(){
+  const el = document.getElementById('combatLogList');
+  if(!el) return;
+  if(combatLog.length === 0){
+    el.innerHTML = '<div class="empty-state">Sin ataques registrados todavía.</div>';
+    return;
+  }
+  el.innerHTML = combatLog.slice(-8).reverse().map(e => `
+    <div class="combat-log-entry">${escapeHtml(e.text)}<small>${e.date}</small></div>
+  `).join('');
+}
+
+async function loadCombatLog(){
+  combatLog = await safeGet('aethelgard-combat-log') || [];
+  renderCombatLog();
+}
+
+async function rollCombat(){
+  const enemy = BESTIARY.find(m=>m.id===selectedEnemyId);
+  if(!enemy) return;
+  const targetIdx = selectedTargetIdx;
+  const ac = targetAC(targetIdx);
+  const enemyHpNow = bestiaryHpCache[enemy.id] ?? enemy.hp;
+
+  const useDominio = enemy.dominio && document.getElementById('combatDominio') && document.getElementById('combatDominio').checked && !bestiaryDominioUsed[enemy.id];
+
+  const toHit = Math.floor(Math.random()*20)+1;
+  const totalToHit = toHit + enemy.atk;
+  const isCrit = toHit === 20;
+  const isFumble = toHit === 1;
+  const hits = useDominio ? true : (isFumble ? false : (isCrit ? true : totalToHit >= ac));
+
+  let text = '';
+  if(!hits){
+    text = `${enemy.name} ataca a ${targetLabel(targetIdx)}: tirada ${toHit}+${enemy.atk}=${totalToHit} vs Armadura ${ac} — falla el golpe.`;
+  } else {
+    const base = parseDamage(enemy.dmg);
+    let total = base.total;
+    let parts = [`base ${base.breakdown}=${base.total}`];
+
+    if(enemy.don && enemy.don.extraDamage && enemy.don.extraDamage !== '0'){
+      const donRoll = parseDamage(enemy.don.extraDamage);
+      total += donRoll.total;
+      parts.push(`Don "${enemy.don.name}" ${donRoll.breakdown}=${donRoll.total}`);
+    }
+    if(enemy.id === 'bestia-rabia'){
+      const lost = Math.max(0, enemy.hp - enemyHpNow);
+      const frenzy = Math.floor(lost/10)*2;
+      if(frenzy > 0){ total += frenzy; parts.push(`Frenesí +${frenzy}`); }
+    }
+    if(isCrit){ total = total * 2; parts.push('¡CRÍTICO! (x2)'); }
+    if(useDominio){ total = total * (enemy.dominio.multiplier||2); parts.push(`Dominio "${enemy.dominio.name}" (x${enemy.dominio.multiplier||2})`); }
+
+    text = `${enemy.name} ataca a ${targetLabel(targetIdx)}: tirada ${toHit}+${enemy.atk}=${totalToHit} vs Armadura ${ac} — ${isCrit?'¡CRÍTICO! ':''}impacta. Daño: ${parts.join(' + ')} → total ${total}.`;
+
+    if(charactersCache[targetIdx]){
+      const c = charactersCache[targetIdx];
+      const maxHP = computeMaxHP(c);
+      c.hpCurrent = Math.max(0, (c.hpCurrent==null?maxHP:c.hpCurrent) - total);
+      await safeSet('aethelgard-characters', charactersCache);
+      text += ` ${targetLabel(targetIdx)} queda con ${c.hpCurrent}/${maxHP} HP.`;
+    } else {
+      text += ` (${targetLabel(targetIdx)} no tiene ficha guardada — aplicá el daño manualmente.)`;
     }
 
-    // Guardado directo sin restricciones de Game Master ni estado Pendiente
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
+    if(useDominio){
+      bestiaryDominioUsed[enemy.id] = true;
+      await safeSet('aethelgard-bestiary-dominio', bestiaryDominioUsed);
+    }
+  }
 
-        const data = {
-            name: document.getElementById('charName').value,
-            class: document.getElementById('charClass').value,
-            race: raceInput.value,
-            stats: {
-                str: document.getElementById('str').value,
-                dex: document.getElementById('dex').value,
-                con: document.getElementById('con').value,
-                int: document.getElementById('int').value,
-                wis: document.getElementById('wis').value,
-                cha: document.getElementById('cha').value
-            },
-            equipment: document.getElementById('equipment').value,
-            notes: document.getElementById('notes').value,
-            status: 'Aprobado' // Aprobado directo sin requerir autorización
-        };
+  combatLog.push({ text, date: new Date().toLocaleTimeString('es-ES') });
+  await safeSet('aethelgard-combat-log', combatLog);
 
-        localStorage.setItem('aethelgard_sheet', JSON.stringify(data));
+  await loadCharacters();
+  renderCombatPanel();
+}
 
-        statusMsg.style.display = 'block';
-        setTimeout(() => {
-            statusMsg.style.display = 'none';
-        }, 3000);
-    });
+// ---------- RESET ----------
+async function resetAll(){
+  if(!confirm('Esto borrará el log narrativo, las fichas, el HP del bestiario y el estado para TODOS los jugadores. ¿Continuar?')) return;
+  await safeSet('aethelgard-log', []);
+  await safeSet('aethelgard-characters', [null,null,null,null]);
+  await safeSet('aethelgard-bestiary-hp', {});
+  await safeSet('aethelgard-bestiary-dominio', {});
+  await safeSet('aethelgard-combat-log', []);
+  await safeSet('aethelgard-state', { tension:'4/4', chapter:0, threat:'Asesino desconocido' });
+  await loadLog();
+  await loadCharacters();
+  await loadBestiary();
+  await loadCombatLog();
+  await loadState();
+}
 
-    // Cargar datos al abrir
-    window.addEventListener('DOMContentLoaded', () => {
-        const saved = localStorage.getItem('aethelgard_sheet');
-        if (saved) {
-            const data = JSON.parse(saved);
-            document.getElementById('charName').value = data.name || '';
-            document.getElementById('charClass').value = data.class || 'Guerrero';
-            document.getElementById('equipment').value = data.equipment || '';
-            document.getElementById('notes').value = data.notes || '';
+// ---------- GM MODE ----------
+let isGM = false;
 
-            if (data.stats) {
-                document.getElementById('str').value = data.stats.str || 10;
-                document.getElementById('dex').value = data.stats.dex || 10;
-                document.getElementById('con').value = data.stats.con || 10;
-                document.getElementById('int').value = data.stats.int || 10;
-                document.getElementById('wis').value = data.stats.wis || 10;
-                document.getElementById('cha').value = data.stats.cha || 10;
-            }
+function renderGmBox(hasPin){
+  const box = document.getElementById('gmBox');
+  if(isGM){
+    box.innerHTML = `
+      <div class="gm-status on">● Modo GM activo en este dispositivo</div>
+      <div style="margin-top:10px;"><button type="button" class="ghost" onclick="lockGM()">Salir del modo GM</button></div>
+    `;
+  } else if(!hasPin){
+    box.innerHTML = `
+      <div class="gm-status off">○ Todavía no hay PIN de GM configurado</div>
+      <div style="margin-top:12px;">
+        <input type="text" id="gmPinSetup" placeholder="Elegí un PIN (ej: 4 dígitos)">
+        <button type="button" onclick="setGmPin()">Configurar y activar Modo GM</button>
+      </div>
+    `;
+  } else {
+    box.innerHTML = `
+      <div class="gm-status off">○ Modo libre (herramientas del GM deshabilitadas)</div>
+      <div style="margin-top:12px;">
+        <input type="text" id="gmPinUnlock" placeholder="PIN de GM">
+        <button type="button" onclick="unlockGM()">Entrar como GM</button>
+      </div>
+    `;
+  }
+}
 
-            if (data.race) {
-                raceInput.value = data.race;
-                document.querySelectorAll('.btn-race').forEach(btn => {
-                    if (btn.textContent.trim() === data.race) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-        }
-    });
+async function loadGM(){
+  const gm = await safeGet('aethelgard-gm');
+  renderGmBox(!!(gm && gm.pin));
+}
+
+async function setGmPin(){
+  const pin = document.getElementById('gmPinSetup').value.trim();
+  if(!pin) return;
+  await safeSet('aethelgard-gm', { pin });
+  isGM = true;
+  renderGmBox(true);
+  renderCharGrid();
+  renderCombatPanel();
+}
+
+async function unlockGM(){
+  const attempt = document.getElementById('gmPinUnlock').value.trim();
+  const gm = await safeGet('aethelgard-gm');
+  if(gm && gm.pin === attempt){
+    isGM = true;
+    renderGmBox(true);
+    renderCharGrid();
+    renderCombatPanel();
+  } else {
+    alert('PIN incorrecto.');
+  }
+}
+
+function lockGM(){
+  isGM = false;
+  loadGM();
+  renderCharGrid();
+  renderCombatPanel();
+}
+
+// ---------- SHARE LINK ----------
+async function loadShareLink(){
+  const s = await safeGet('aethelgard-share-link');
+  const url = s && s.url ? s.url : '';
+  document.getElementById('shareLinkInput').value = url;
+  updateWaButton(url);
+}
+
+async function saveShareLink(){
+  const url = document.getElementById('shareLinkInput').value.trim();
+  if(!url) return;
+  await safeSet('aethelgard-share-link', { url });
+  updateWaButton(url);
+}
+
+function updateWaButton(url){
+  const btn = document.getElementById('waBtn');
+  if(url){
+    const text = encodeURIComponent(`🌑 Únete a la campaña "El Eclipse de Aethelgard" — completa tu ficha aquí:\n${url}`);
+    btn.href = `https://wa.me/?text=${text}`;
+    btn.classList.remove('disabled');
+  } else {
+    btn.href = '#';
+    btn.classList.add('disabled');
+  }
+}
+
+// ---------- INIT ----------
+(async function init(){
+  await loadState();
+  await loadLog();
+  await loadGM();
+  await loadCharacters();
+  await loadBestiary();
+  await loadCombatLog();
+  await loadShareLink();
+  showTerritory('neutral');
+})();
 </script>
-
 </body>
 </html>
